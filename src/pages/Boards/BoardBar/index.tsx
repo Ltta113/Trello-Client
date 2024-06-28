@@ -6,7 +6,7 @@ function BoardBar() {
       sx={{
         backgroundColor: 'primary.dark',
         width: '100%',
-        height: '58px',
+        height: '60px',
         display: 'flex',
         alignItems: 'center'
       }}
