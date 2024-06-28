@@ -6,7 +6,7 @@ function BoardContent() {
       sx={{
         backgroundColor: 'primary.main',
         width: '100%',
-        height: 'calc(100vh - 58px - 48px)',
+        height: 'calc(100vh - 58px - 60px)',
         display: 'flex',
         alignItems: 'center'
       }}
