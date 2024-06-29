@@ -32,13 +32,14 @@ export default function Profiles() {
           aria-expanded={open ? 'true' : undefined}
         >
           <Avatar
-            sx={{ width: 30, height: 30 }}
+            sx={{ width: 36, height: 36 }}
             alt="None"
             src="https://lh3.googleusercontent.com/a/ACg8ocJZV6LUuzWXWw0KICxhz3J19PlxTScBiMdfhbod9vINqQ=s96-c"
           />
         </IconButton>
       </Tooltip>
       <Menu
+        sx={{ color: 'white' }}
         id="basic-menu-profiles"
         anchorEl={anchorEl}
         open={open}
@@ -47,26 +48,26 @@ export default function Profiles() {
           'aria-labelledby': 'basic-button-profiles'
         }}
       >
-        <MenuItem >
+        <MenuItem>
           <Avatar sx={{ width: 28, height: 28, mr: 2 }} /> Profile
         </MenuItem>
-        <MenuItem >
+        <MenuItem>
           <Avatar sx={{ width: 28, height: 28, mr: 2 }} /> My account
         </MenuItem>
         <Divider />
-        <MenuItem >
+        <MenuItem>
           <ListItemIcon>
             <PersonAdd fontSize="small" />
           </ListItemIcon>
           Add another account
         </MenuItem>
-        <MenuItem >
+        <MenuItem>
           <ListItemIcon>
             <Settings fontSize="small" />
           </ListItemIcon>
           Settings
         </MenuItem>
-        <MenuItem >
+        <MenuItem>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>
