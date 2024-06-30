@@ -8,12 +8,33 @@ import AttachmentIcon from '@mui/icons-material/Attachment'
 import Typography from '@mui/material/Typography'
 import Button from '@mui/material/Button'
 import { ICard } from '~/apis/type'
+import React, { HTMLAttributes } from 'react'
+import { CSS } from '@dnd-kit/utilities'
+import { useSortable } from '@dnd-kit/sortable'
 
-interface CardProps {
+type CardProps = {
   card: ICard
-}
+} & HTMLAttributes<HTMLDivElement>
 
-function Card({ card }: CardProps) {
+function Card({ card, ...props }: CardProps) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({
+    id: card._id,
+    data: { ...card }
+  })
+
+  const dndKitCardStyles: React.CSSProperties = {
+    transform: CSS.Translate.toString(transform),
+    transition: transition || undefined,
+    opacity: isDragging ? 0.5 : 1
+  }
+
   const shouldShowCardAction = () => {
     return (
       !!card?.memberIds?.length ||
@@ -24,6 +45,11 @@ function Card({ card }: CardProps) {
 
   return (
     <MuiCard
+      ref={setNodeRef}
+      style={dndKitCardStyles}
+      {...props}
+      {...attributes}
+      {...listeners}
       sx={{
         cursor: 'pointer',
         boxShadow: '0 1px 1px rgba(0, 0, 0, 0.2)',
