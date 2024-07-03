@@ -6,8 +6,6 @@ import { mapOrder } from '~/utils/sort'
 import {
   DndContext,
   DragEndEvent,
-  MouseSensor,
-  TouchSensor,
   useSensors,
   useSensor,
   DragStartEvent,
@@ -21,6 +19,7 @@ import {
   getFirstCollision,
   UniqueIdentifier
 } from '@dnd-kit/core'
+import { MouseSensor, TouchSensor } from '~/customLib/DndKitSensors'
 import { useEffect, useState, useCallback, useRef } from 'react'
 import { arrayMove } from '@dnd-kit/sortable'
 import Column from './ListColumns/Column/Column'
@@ -79,7 +78,7 @@ function BoardContent({ board }: BoardBarProps) {
     activateColumn: IColumn,
     activeDraggingCardData: ICard
   ) => {
-    if (!active || !over ) return
+    if (!active || !over) return
 
     setOrderedColumns((prev) => {
       const overCardIdex = overColumn?.cards?.findIndex(

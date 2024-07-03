@@ -26,6 +26,6 @@ export interface IColumn {
   _id: string
   boardId: string
   title: string
-  cardOrderIds?: string[]
+  cardOrderIds: string[]
   cards: ICard[] | []
 }
