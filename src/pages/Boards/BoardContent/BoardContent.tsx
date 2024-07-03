@@ -29,7 +29,7 @@ import { cloneDeep, isEmpty } from 'lodash'
 import { generatePlaceholder } from '~/utils/formatters'
 
 interface BoardBarProps {
-  board: IBoard
+  board: IBoard | undefined
 }
 
 const ACTIVATE_DRAG_ITEM_TYPE = {
@@ -47,7 +47,9 @@ function BoardContent({ board }: BoardBarProps) {
 
   const sensors = useSensors(mouseSensor, touchSensor)
   useEffect(() => {
-    setOrderedColumns(mapOrder(board?.columns, board?.columnOrderIds, '_id'))
+    if (board?.columns && board?.columnOrderIds) {
+      setOrderedColumns(mapOrder(board?.columns, board?.columnOrderIds, '_id'))
+    }
   }, [board])
 
   const lastOverId = useRef<UniqueIdentifier | null>(null)
@@ -77,7 +79,7 @@ function BoardContent({ board }: BoardBarProps) {
     activateColumn: IColumn,
     activeDraggingCardData: ICard
   ) => {
-    if (!active || !over) return
+    if (!active || !over ) return
 
     setOrderedColumns((prev) => {
       const overCardIdex = overColumn?.cards?.findIndex(
@@ -128,7 +130,9 @@ function BoardContent({ board }: BoardBarProps) {
           columnId: nextOverColumn._id
         } as ICard)
 
-        nextOverColumn.cards = nextOverColumn.cards.filter(card => !card.FE_PlaceholderCard)
+        nextOverColumn.cards = nextOverColumn.cards.filter(
+          (card) => !card.FE_PlaceholderCard
+        )
 
         nextOverColumn.cardOrderIds = nextOverColumn.cards.map(
           (card) => card._id

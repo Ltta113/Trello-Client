@@ -5,9 +5,9 @@ export interface IBoard {
   description: string
   type: 'public' | 'private'
   ownerIds: string[]
-  memberIds: string[]
-  columnOrderIds: string[]
-  columns: IColumn[]
+  memberIds?: string[]
+  columnOrderIds?: string[]
+  columns: IColumn[] | []
 }
 export interface ICard {
   _id: string
@@ -26,6 +26,6 @@ export interface IColumn {
   _id: string
   boardId: string
   title: string
-  cardOrderIds: string[]
-  cards: ICard[]
+  cardOrderIds?: string[]
+  cards: ICard[] | []
 }
