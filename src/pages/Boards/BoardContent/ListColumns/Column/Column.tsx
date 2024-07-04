@@ -24,6 +24,9 @@ import { CSS } from '@dnd-kit/utilities'
 import CloseIcon from '@mui/icons-material/Close'
 import TextField from '@mui/material/TextField'
 import { toast } from 'react-toastify'
+import { RootState, useAppDispatch } from '~/redux/store'
+import { useSelector } from 'react-redux'
+import { createNewCard } from '~/redux/boardSlice'
 
 type ColumProps = {
   column: IColumn
@@ -48,7 +51,8 @@ function Column({ column, ...props }: ColumProps) {
     height: '100%',
     opacity: isDragging ? 0.5 : 1
   }
-
+  const board = useSelector((state: RootState) => state.board.board)
+  const dispatch = useAppDispatch()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<SVGSVGElement>) => {
@@ -70,9 +74,17 @@ function Column({ column, ...props }: ColumProps) {
       toast.error('Please enter Card title', { position: 'bottom-right' })
       return
     }
-
+    const newCardData = {
+      title: newCardTitle,
+      boardId: board?._id,
+      columnId: column._id
+    }
     toggleNewCardForm()
     setNewCardTitle('')
+    const promise = dispatch(createNewCard(newCardData))
+    return () => {
+      promise.abort()
+    }
   }
 
   return (

@@ -11,12 +11,18 @@ import { useState } from 'react'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
 import { toast } from 'react-toastify'
+import { RootState, useAppDispatch } from '~/redux/store'
+import { useSelector } from 'react-redux'
+import { createNewColumn } from '~/redux/boardSlice'
 
 interface ColumsBarProps {
   columns: IColumn[]
 }
 
 function ListColumns({ columns }: ColumsBarProps) {
+  const board = useSelector((state: RootState) => state.board.board)
+
+  const dispatch = useAppDispatch()
   const [openNewColumnForm, setOpenNewColumnForm] = useState<boolean>(false)
   const toggleNewColumnForm = () => setOpenNewColumnForm(!openNewColumnForm)
 
@@ -28,8 +34,16 @@ function ListColumns({ columns }: ColumsBarProps) {
       return
     }
 
+    const newColumData = {
+      title: newColumTitle,
+      boardId: board?._id
+    }
     toggleNewColumnForm()
     setNewColumTitle('')
+    const promise = dispatch(createNewColumn(newColumData))
+    return () => {
+      promise.abort()
+    }
   }
 
   return (
@@ -49,7 +63,6 @@ function ListColumns({ columns }: ColumsBarProps) {
         }}
       >
         {columns?.map((column) => <Column key={column._id} column={column} />)}
-
         {!openNewColumnForm ? (
           <Box
             sx={{
