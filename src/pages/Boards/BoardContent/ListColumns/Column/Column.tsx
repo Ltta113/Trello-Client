@@ -81,10 +81,7 @@ function Column({ column, ...props }: ColumProps) {
     }
     toggleNewCardForm()
     setNewCardTitle('')
-    const promise = dispatch(createNewCard(newCardData))
-    return () => {
-      promise.abort()
-    }
+    dispatch(createNewCard(newCardData))
   }
 
   return (

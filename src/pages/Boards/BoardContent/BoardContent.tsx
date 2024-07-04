@@ -26,6 +26,8 @@ import Column from './ListColumns/Column/Column'
 import Card from './ListColumns/Column/ListCards/Card/Card'
 import { cloneDeep, isEmpty } from 'lodash'
 import { generatePlaceholder } from '~/utils/formatters'
+import { useAppDispatch } from '~/redux/store'
+import { updateBoardDetails } from '~/redux/boardSlice'
 
 interface BoardBarProps {
   board: IBoard | undefined
@@ -50,6 +52,8 @@ function BoardContent({ board }: BoardBarProps) {
       setOrderedColumns(mapOrder(board?.columns, board?.columnOrderIds, '_id'))
     }
   }, [board])
+
+  const dispatch = useAppDispatch()
 
   const lastOverId = useRef<UniqueIdentifier | null>(null)
   const [orderedColumns, setOrderedColumns] = useState<IColumn[]>([])
@@ -123,7 +127,6 @@ function BoardContent({ board }: BoardBarProps) {
         nextOverColumn.cards = nextOverColumn.cards.filter(
           (card) => card._id !== activateDragItemId
         )
-
         nextOverColumn.cards = nextOverColumn.cards.toSpliced(newCardIndex, 0, {
           ...activeDraggingCardData,
           columnId: nextOverColumn._id
@@ -253,7 +256,8 @@ function BoardContent({ board }: BoardBarProps) {
           oldIndex,
           newIndex
         )
-        // const dndOrderedColumnsIds = dndOrderedColumns.map(c => c._id)
+        const dndOrderedColumnsIds = dndOrderedColumns.map(c => c._id)
+        dispatch(updateBoardDetails({ boardId: board?._id as string, dataUpdate: { columnOrderIds : dndOrderedColumnsIds } }))
         setOrderedColumns(dndOrderedColumns)
       }
     }

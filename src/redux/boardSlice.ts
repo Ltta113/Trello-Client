@@ -1,8 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createSlice, createAsyncThunk, AsyncThunk } from '@reduxjs/toolkit'
+import { isEmpty } from 'lodash'
 import { IBoard, ICard, IColumn } from '~/apis/type'
 import instance from '~/axiosConfig'
+import { generatePlaceholder } from '~/utils/formatters'
 
 type GenericAsyncThunk = AsyncThunk<unknown, unknown, any>
 
@@ -27,6 +29,18 @@ export const fetchBoardDetails: AsyncThunk<IBoard, string, any> =
     async (boardId, thunkAPI) => {
       try {
         const response = await instance.get<IBoard>(`/v1/boards/${boardId}`)
+        return response.data
+      } catch (error: any) {
+        return thunkAPI.rejectWithValue(error.response.data)
+      }
+    }
+  )
+export const updateBoardDetails: AsyncThunk<IBoard, { boardId: string, dataUpdate: any }, any> =
+  createAsyncThunk<IBoard, { boardId: string, dataUpdate: any }>(
+    'boards/updateBoardDetails',
+    async ({ boardId, dataUpdate }, thunkAPI) => {
+      try {
+        const response = await instance.put<IBoard>(`/v1/boards/${boardId}`, dataUpdate)
         return response.data
       } catch (error: any) {
         return thunkAPI.rejectWithValue(error.response.data)
@@ -68,13 +82,33 @@ const boardSlice = createSlice({
       .addCase(fetchBoardDetails.fulfilled, (state, action) => {
         state.board = action.payload
         state.loading = false
+        state.board?.columns.forEach((column) => {
+          if (isEmpty(column.cards)) column.cards = [generatePlaceholder(column)]
+          column.cardOrderIds = [generatePlaceholder(column)._id]
+        })
+      })
+      .addCase(updateBoardDetails.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(updateBoardDetails.fulfilled, (state, action) => {
+        state.board = action.payload
+        state.loading = false
+        state.board?.columns.forEach((column) => {
+          if (isEmpty(column.cards)) column.cards = [generatePlaceholder(column)]
+          column.cardOrderIds = [generatePlaceholder(column)._id]
+        })
       })
       .addCase(createNewColumn.pending, (state) => {
         state.loading = true
       })
       .addCase(createNewColumn.fulfilled, (state, action) => {
         state.loading = false
-        state.board?.columns.push(action.payload as never)
+        state.board?.columns?.push(action.payload as never)
+        state.board?.columnOrderIds?.push(action.payload._id)
+        state.board?.columns.forEach((column) => {
+          if (isEmpty(column.cards)) column.cards = [generatePlaceholder(column)]
+          column.cardOrderIds = [generatePlaceholder(column)._id]
+        })
       })
       .addCase(createNewCard.pending, (state) => {
         state.loading = true
@@ -88,6 +122,7 @@ const boardSlice = createSlice({
           )
           if (columnIndex !== -1) {
             state.board.columns[columnIndex].cards.push(action.payload as never)
+            state.board?.columns[columnIndex].cardOrderIds.push(action.payload._id)
           }
         }
       })
