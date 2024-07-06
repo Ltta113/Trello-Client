@@ -6,6 +6,9 @@ import { useEffect } from 'react'
 import { RootState, useAppDispatch } from '~/redux/store'
 import { useSelector } from 'react-redux'
 import { fetchBoardDetails } from '~/redux/boardSlice'
+import CircularProgress from '@mui/material/CircularProgress'
+import Box from '@mui/material/Box'
+import { Typography } from '@mui/material'
 
 function Board() {
   const board = useSelector((state: RootState) => state.board.board)
@@ -19,6 +22,23 @@ function Board() {
       promise.abort()
     }
   }, [dispatch])
+  if (!board) {
+    return (
+      <Box
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 2,
+          width: '100vw',
+          height: '100vh'
+        }}
+      >
+        <CircularProgress />
+        <Typography>Loading Board...</Typography>
+      </Box>
+    )
+  }
 
   return (
     <Container disableGutters maxWidth={false} sx={{ height: '100vh' }}>

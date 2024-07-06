@@ -27,7 +27,11 @@ import Card from './ListColumns/Column/ListCards/Card/Card'
 import { cloneDeep, isEmpty } from 'lodash'
 import { generatePlaceholder } from '~/utils/formatters'
 import { useAppDispatch } from '~/redux/store'
-import { updateBoardDetails } from '~/redux/boardSlice'
+import {
+  moveCardToDiffColumnAPI,
+  updateBoardDetails,
+  updateColumnDetails
+} from '~/redux/boardSlice'
 
 interface BoardBarProps {
   board: IBoard | undefined
@@ -80,7 +84,8 @@ function BoardContent({ board }: BoardBarProps) {
     active: DragEndEvent['active'] | DragOverEvent['active'],
     over: DragEndEvent['over'] | DragOverEvent['over'],
     activateColumn: IColumn,
-    activeDraggingCardData: ICard
+    activeDraggingCardData: ICard,
+    triggerFrom?: string
   ) => {
     if (!active || !over) return
 
@@ -141,6 +146,24 @@ function BoardContent({ board }: BoardBarProps) {
         )
       }
 
+      let prevCardOrderIds = orderedColumns.find((c) => c._id === oldColumn?._id )?.cardOrderIds
+      if (prevCardOrderIds && prevCardOrderIds[0].includes('placeholder-card')) {
+        prevCardOrderIds = []
+      }
+
+      if (triggerFrom === 'handleDragEnd') {
+        const dataUpdate = {
+          cardId: activateDragItemId,
+          prevColumnId: oldColumn?._id,
+          prevCardOrderIds,
+          nextColumnId: nextActiveColumn?._id,
+          nextCardOrderIds: orderedColumns.find(
+            (c) => c._id === nextActiveColumn?._id
+          )?.cardOrderIds
+        }
+        dispatch(moveCardToDiffColumnAPI(dataUpdate))
+      }
+
       return nextColumns
     })
   }
@@ -188,7 +211,8 @@ function BoardContent({ board }: BoardBarProps) {
         active,
         over,
         activateColumn,
-        activeDraggingCardData as ICard
+        activeDraggingCardData as ICard,
+        'handleDragOver'
       )
     }
   }
@@ -217,7 +241,8 @@ function BoardContent({ board }: BoardBarProps) {
           active,
           over,
           activateColumn,
-          activeDraggingCardData as ICard
+          activeDraggingCardData as ICard,
+          'handleDragEnd'
         )
       } else {
         const oldIndex = oldColumn?.cards?.findIndex(
@@ -232,6 +257,13 @@ function BoardContent({ board }: BoardBarProps) {
           oldIndex,
           newIndex
         )
+        const dndOrderedCardIds = dndOrderedCards.map((c) => c._id)
+        dispatch(
+          updateColumnDetails({
+            columnId: oldColumn?._id as string,
+            dataUpdate: { cardOrderIds: dndOrderedCardIds }
+          })
+        )
         setOrderedColumns((prev) => {
           const nextColumns: IColumn[] = cloneDeep(prev)
 
@@ -239,7 +271,7 @@ function BoardContent({ board }: BoardBarProps) {
 
           if (targetColumn) {
             targetColumn.cards = dndOrderedCards
-            targetColumn.cardOrderIds = dndOrderedCards.map((c) => c._id)
+            targetColumn.cardOrderIds = dndOrderedCardIds
           }
 
           return nextColumns
@@ -256,8 +288,13 @@ function BoardContent({ board }: BoardBarProps) {
           oldIndex,
           newIndex
         )
-        const dndOrderedColumnsIds = dndOrderedColumns.map(c => c._id)
-        dispatch(updateBoardDetails({ boardId: board?._id as string, dataUpdate: { columnOrderIds : dndOrderedColumnsIds } }))
+        const dndOrderedColumnsIds = dndOrderedColumns.map((c) => c._id)
+        dispatch(
+          updateBoardDetails({
+            boardId: board?._id as string,
+            dataUpdate: { columnOrderIds: dndOrderedColumnsIds }
+          })
+        )
         setOrderedColumns(dndOrderedColumns)
       }
     }

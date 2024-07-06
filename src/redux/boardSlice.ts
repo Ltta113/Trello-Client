@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createSlice, createAsyncThunk, AsyncThunk } from '@reduxjs/toolkit'
@@ -5,6 +7,7 @@ import { isEmpty } from 'lodash'
 import { IBoard, ICard, IColumn } from '~/apis/type'
 import instance from '~/axiosConfig'
 import { generatePlaceholder } from '~/utils/formatters'
+import { mapOrder } from '~/utils/sort'
 
 type GenericAsyncThunk = AsyncThunk<unknown, unknown, any>
 
@@ -35,12 +38,51 @@ export const fetchBoardDetails: AsyncThunk<IBoard, string, any> =
       }
     }
   )
-export const updateBoardDetails: AsyncThunk<IBoard, { boardId: string, dataUpdate: any }, any> =
-  createAsyncThunk<IBoard, { boardId: string, dataUpdate: any }>(
-    'boards/updateBoardDetails',
-    async ({ boardId, dataUpdate }, thunkAPI) => {
+export const updateBoardDetails: AsyncThunk<
+  IBoard,
+  { boardId: string; dataUpdate: any },
+  any
+> = createAsyncThunk<IBoard, { boardId: string; dataUpdate: any }>(
+  'boards/updateBoardDetails',
+  async ({ boardId, dataUpdate }, thunkAPI) => {
+    try {
+      const response = await instance.put<IBoard>(
+        `/v1/boards/${boardId}`,
+        dataUpdate
+      )
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
+export const updateColumnDetails: AsyncThunk<
+  IColumn,
+  { columnId: string; dataUpdate: any },
+  any
+> = createAsyncThunk<IColumn, { columnId: string; dataUpdate: any }>(
+  'columns/updateColumnDetails',
+  async ({ columnId, dataUpdate }, thunkAPI) => {
+    try {
+      const response = await instance.put<IColumn>(
+        `/v1/columns/${columnId}`,
+        dataUpdate
+      )
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
+export const moveCardToDiffColumnAPI: AsyncThunk<string, any, any> =
+  createAsyncThunk<string, any>(
+    'boards/moveCardToDiffColumn',
+    async (dataUpdate, thunkAPI) => {
       try {
-        const response = await instance.put<IBoard>(`/v1/boards/${boardId}`, dataUpdate)
+        const response = await instance.put<string>(
+          '/v1/boards/support/moving_card',
+          dataUpdate
+        )
         return response.data
       } catch (error: any) {
         return thunkAPI.rejectWithValue(error.response.data)
@@ -83,9 +125,16 @@ const boardSlice = createSlice({
         state.board = action.payload
         state.loading = false
         state.board?.columns.forEach((column) => {
-          if (isEmpty(column.cards)) column.cards = [generatePlaceholder(column)]
-          column.cardOrderIds = [generatePlaceholder(column)._id]
+          if (isEmpty(column.cards)) {
+            column.cards = [generatePlaceholder(column)]
+            column.cardOrderIds = [generatePlaceholder(column)._id]
+          } else {
+            column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
+          }
         })
+      })
+      .addCase(moveCardToDiffColumnAPI.fulfilled, (state, _action) => {
+        state.loading = false
       })
       .addCase(updateBoardDetails.pending, (state) => {
         state.loading = true
@@ -94,9 +143,16 @@ const boardSlice = createSlice({
         state.board = action.payload
         state.loading = false
         state.board?.columns.forEach((column) => {
-          if (isEmpty(column.cards)) column.cards = [generatePlaceholder(column)]
+          if (isEmpty(column.cards))
+            column.cards = [generatePlaceholder(column)]
           column.cardOrderIds = [generatePlaceholder(column)._id]
         })
+      })
+      .addCase(updateColumnDetails.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(updateColumnDetails.fulfilled, (state, _action) => {
+        state.loading = false
       })
       .addCase(createNewColumn.pending, (state) => {
         state.loading = true
@@ -106,8 +162,10 @@ const boardSlice = createSlice({
         state.board?.columns?.push(action.payload as never)
         state.board?.columnOrderIds?.push(action.payload._id)
         state.board?.columns.forEach((column) => {
-          if (isEmpty(column.cards)) column.cards = [generatePlaceholder(column)]
-          column.cardOrderIds = [generatePlaceholder(column)._id]
+          if (isEmpty(column.cards)) {
+            column.cards = [generatePlaceholder(column)]
+            column.cardOrderIds = [generatePlaceholder(column)._id]
+          }
         })
       })
       .addCase(createNewCard.pending, (state) => {
@@ -121,8 +179,11 @@ const boardSlice = createSlice({
             (col) => col._id === action.payload.columnId
           )
           if (columnIndex !== -1) {
-            state.board.columns[columnIndex].cards.push(action.payload as never)
-            state.board?.columns[columnIndex].cardOrderIds.push(action.payload._id)
+            const column = state.board.columns[columnIndex]
+            column.cards.push(action.payload as never)
+            column.cardOrderIds.push(action.payload._id)
+            column.cards = column.cards.filter(card => !card.FE_PlaceholderCard)
+            column.cardOrderIds = column.cards.map(card => card._id)
           }
         }
       })
