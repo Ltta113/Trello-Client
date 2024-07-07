@@ -109,6 +109,18 @@ export const createNewCard: AsyncThunk<ICard, any, any> = createAsyncThunk<ICard
     }
   }
 )
+export const updateCardDetails: AsyncThunk<ICard, { cardId: string; dataUpdate: any }, any> =
+  createAsyncThunk<ICard, { cardId: string; dataUpdate: any }>(
+    'cards/updateCardDetails',
+    async ({ cardId, dataUpdate }, thunkAPI) => {
+      try {
+        const response = await instance.put<ICard>(`/v1/cards/${cardId}`, dataUpdate)
+        return response.data
+      } catch (error: any) {
+        return thunkAPI.rejectWithValue(error.response.data)
+      }
+    }
+  )
 const boardSlice = createSlice({
   name: 'board',
   initialState,
@@ -211,8 +223,22 @@ const boardSlice = createSlice({
       .addCase(updateColumnDetails.pending, (state) => {
         state.loading = true
       })
-      .addCase(updateColumnDetails.fulfilled, (state, _action) => {
+      .addCase(updateColumnDetails.fulfilled, (state, action) => {
         state.loading = false
+        const columnIdx = state.board?.columns.findIndex(c => c._id === action.meta.arg.columnId)
+        if (state.board && state.board.columns[columnIdx as number])
+          state.board.columns[columnIdx as number] = action.payload
+      })
+      .addCase(updateCardDetails.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(updateCardDetails.fulfilled, (state, action) => {
+        state.loading = false
+        const columnIdx = state.board?.columns.findIndex(c => c._id === action.payload.columnId)
+        if (state.board && state.board.columns[columnIdx as number]) {
+          const cardIdx = state.board?.columns[columnIdx as number].cards.findIndex(c => c._id === action.payload._id)
+          state.board.columns[columnIdx as number].cards[cardIdx] = action.payload
+        }
       })
       .addCase(deleteColumn.pending, (state) => {
         state.loading = true
