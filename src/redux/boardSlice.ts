@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { createSlice, createAsyncThunk, AsyncThunk } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk, AsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { isEmpty } from 'lodash'
 import { IBoard, ICard, IColumn } from '~/apis/type'
 import instance from '~/axiosConfig'
@@ -18,103 +18,155 @@ type FulfilledAction = ReturnType<GenericAsyncThunk['fulfilled']>
 export interface BoardState {
   board: IBoard | undefined
   loading: boolean
+  success: boolean
+  message: string
   currentRequestId: undefined | string
 }
 
 const initialState: BoardState = {
   board: undefined,
   loading: false,
+  success: false,
+  message: '',
   currentRequestId: undefined
 }
-export const fetchBoardDetails: AsyncThunk<IBoard, string, any> =
-  createAsyncThunk<IBoard, string>(
-    'boards/fetchBoardDetails',
-    async (boardId, thunkAPI) => {
-      try {
-        const response = await instance.get<IBoard>(`/v1/boards/${boardId}`)
-        return response.data
-      } catch (error: any) {
-        return thunkAPI.rejectWithValue(error.response.data)
-      }
-    }
-  )
-export const updateBoardDetails: AsyncThunk<
-  IBoard,
-  { boardId: string; dataUpdate: any },
-  any
-> = createAsyncThunk<IBoard, { boardId: string; dataUpdate: any }>(
-  'boards/updateBoardDetails',
-  async ({ boardId, dataUpdate }, thunkAPI) => {
+export const fetchBoardDetails: AsyncThunk<IBoard, string, any> = createAsyncThunk<IBoard, string>(
+  'boards/fetchBoardDetails',
+  async (boardId, thunkAPI) => {
     try {
-      const response = await instance.put<IBoard>(
-        `/v1/boards/${boardId}`,
-        dataUpdate
-      )
+      const response = await instance.get<IBoard>(`/v1/boards/${boardId}`)
       return response.data
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data)
     }
   }
 )
-export const updateColumnDetails: AsyncThunk<
-  IColumn,
-  { columnId: string; dataUpdate: any },
-  any
-> = createAsyncThunk<IColumn, { columnId: string; dataUpdate: any }>(
-  'columns/updateColumnDetails',
-  async ({ columnId, dataUpdate }, thunkAPI) => {
-    try {
-      const response = await instance.put<IColumn>(
-        `/v1/columns/${columnId}`,
-        dataUpdate
-      )
-      return response.data
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data)
-    }
-  }
-)
-export const moveCardToDiffColumnAPI: AsyncThunk<string, any, any> =
-  createAsyncThunk<string, any>(
-    'boards/moveCardToDiffColumn',
-    async (dataUpdate, thunkAPI) => {
+export const updateBoardDetails: AsyncThunk<IBoard, { boardId: string; dataUpdate: any }, any> =
+  createAsyncThunk<IBoard, { boardId: string; dataUpdate: any }>(
+    'boards/updateBoardDetails',
+    async ({ boardId, dataUpdate }, thunkAPI) => {
       try {
-        const response = await instance.put<string>(
-          '/v1/boards/support/moving_card',
-          dataUpdate
-        )
+        const response = await instance.put<IBoard>(`/v1/boards/${boardId}`, dataUpdate)
         return response.data
       } catch (error: any) {
         return thunkAPI.rejectWithValue(error.response.data)
       }
     }
   )
-export const createNewColumn: AsyncThunk<IColumn, any, any> = createAsyncThunk<
-  IColumn,
-  any
->('columns/createNewColumn', async (body, thunkAPI) => {
-  try {
-    const response = await instance.post<IColumn>('/v1/columns/', body)
-    return response.data
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.response.data)
+export const updateColumnDetails: AsyncThunk<IColumn, { columnId: string; dataUpdate: any }, any> =
+  createAsyncThunk<IColumn, { columnId: string; dataUpdate: any }>(
+    'columns/updateColumnDetails',
+    async ({ columnId, dataUpdate }, thunkAPI) => {
+      try {
+        const response = await instance.put<IColumn>(`/v1/columns/${columnId}`, dataUpdate)
+        return response.data
+      } catch (error: any) {
+        return thunkAPI.rejectWithValue(error.response.data)
+      }
+    }
+  )
+export const moveCardToDiffColumnAPI: AsyncThunk<string, any, any> = createAsyncThunk<string, any>(
+  'boards/moveCardToDiffColumn',
+  async (dataUpdate, thunkAPI) => {
+    try {
+      const response = await instance.put<string>('/v1/boards/support/moving_card', dataUpdate)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
   }
-})
-export const createNewCard: AsyncThunk<ICard, any, any> = createAsyncThunk<
-  ICard,
-  any
->('cards/createNewColumn', async (body, thunkAPI) => {
-  try {
-    const response = await instance.post<ICard>('/v1/cards/', body)
-    return response.data
-  } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.response.data)
+)
+export const createNewColumn: AsyncThunk<IColumn, any, any> = createAsyncThunk<IColumn, any>(
+  'columns/createNewColumn',
+  async (body, thunkAPI) => {
+    try {
+      const response = await instance.post<IColumn>('/v1/columns/', body)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
   }
-})
+)
+export const deleteColumn: AsyncThunk<string, string, any> = createAsyncThunk<string, any>(
+  'columns/deleteColumn',
+  async (columnId, thunkAPI) => {
+    try {
+      const response = await instance.delete<string>(`/v1/columns/${columnId}`)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
+export const createNewCard: AsyncThunk<ICard, any, any> = createAsyncThunk<ICard, any>(
+  'cards/createNewColumn',
+  async (body, thunkAPI) => {
+    try {
+      const response = await instance.post<ICard>('/v1/cards/', body)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
 const boardSlice = createSlice({
   name: 'board',
   initialState,
-  reducers: {},
+  reducers: {
+    updateMoveDiffState: (state, action: PayloadAction<any>) => {
+      const nextActiveColumn = state.board?.columns.find(
+        (column) => column._id === action.payload.prevColumnId
+      )
+      const nextOverColumn = state.board?.columns.find(
+        (column) => column._id === action.payload.nextColumnId
+      )
+      if (nextActiveColumn) {
+        nextActiveColumn.cards = nextActiveColumn.cards.filter(
+          (card) => card._id !== action.payload.cardId
+        )
+        if (isEmpty(nextActiveColumn.cards)) {
+          nextActiveColumn.cards = [generatePlaceholder(nextActiveColumn)]
+        }
+        nextActiveColumn.cardOrderIds = nextActiveColumn.cards.map((card) => card._id)
+      }
+      if (nextOverColumn) {
+        nextOverColumn.cards = nextOverColumn.cards.filter(
+          (card) => card._id !== action.payload.cardId
+        )
+        nextOverColumn.cards = nextOverColumn.cards.toSpliced(action.payload.newCardIndex, 0, {
+          ...action.payload.cardData,
+          columnId: nextOverColumn._id
+        } as ICard)
+        nextOverColumn.cards = nextOverColumn.cards.filter((card) => !card.FE_PlaceholderCard)
+
+        nextOverColumn.cardOrderIds = nextOverColumn.cards.map((card) => card._id)
+      }
+    },
+    updateMoveOneState: (state, action: PayloadAction<any>) => {
+      const columnIndex = state.board?.columns.findIndex(
+        (column) => column._id === action.payload.columnId
+      )
+      if (columnIndex)
+        if (state.board && state.board.columns && state.board.columns[columnIndex]) {
+          state.board.columns[columnIndex].cardOrderIds = action.payload.listIdCardSorted
+          state.board.columns[columnIndex].cards = action.payload.listCardSorted
+        }
+    },
+    updateMoveColumnState: (state, action: PayloadAction<any>) => {
+      if (state.board && state.board.columns) {
+        state.board.columns = action.payload.listColumn
+        state.board.columnOrderIds = action.payload.listColumnIds
+        state.board?.columns.forEach((column) => {
+          if (isEmpty(column.cards)) {
+            column.cards = [generatePlaceholder(column)]
+            column.cardOrderIds = [generatePlaceholder(column)._id]
+          } else {
+            // column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
+          }
+        })
+      }
+    }
+  },
   extraReducers(builder) {
     builder
       .addCase(fetchBoardDetails.pending, (state) => {
@@ -132,6 +184,8 @@ const boardSlice = createSlice({
             column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
           }
         })
+        if (state.board.columns && state.board.columnOrderIds)
+          state.board.columns = mapOrder(state.board?.columns, state.board?.columnOrderIds, '_id')
       })
       .addCase(moveCardToDiffColumnAPI.fulfilled, (state, _action) => {
         state.loading = false
@@ -142,10 +196,16 @@ const boardSlice = createSlice({
       .addCase(updateBoardDetails.fulfilled, (state, action) => {
         state.board = action.payload
         state.loading = false
+        if (state.board.columns && state.board.columnOrderIds)
+          state.board.columns = mapOrder(state.board?.columns, state.board?.columnOrderIds, '_id')
         state.board?.columns.forEach((column) => {
-          if (isEmpty(column.cards))
+          if (isEmpty(column.cards)) {
             column.cards = [generatePlaceholder(column)]
-          column.cardOrderIds = [generatePlaceholder(column)._id]
+            column.cardOrderIds = [generatePlaceholder(column)._id]
+          } else {
+            column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
+            // console.log(column.cardOrderIds)
+          }
         })
       })
       .addCase(updateColumnDetails.pending, (state) => {
@@ -153,6 +213,22 @@ const boardSlice = createSlice({
       })
       .addCase(updateColumnDetails.fulfilled, (state, _action) => {
         state.loading = false
+      })
+      .addCase(deleteColumn.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(deleteColumn.fulfilled, (state, action) => {
+        state.loading = false
+        state.success = true
+        if (state.board?.columns) {
+          state.board.columns = state.board?.columns.filter((c) => c._id !== action.meta.arg)
+          state.board.columnOrderIds = state.board?.columnOrderIds?.filter(
+            (_id) => _id !== action.meta.arg
+          )
+        }
+      })
+      .addCase(deleteColumn.rejected, (state, _action) => {
+        state.success = false
       })
       .addCase(createNewColumn.pending, (state) => {
         state.loading = true
@@ -182,8 +258,8 @@ const boardSlice = createSlice({
             const column = state.board.columns[columnIndex]
             column.cards.push(action.payload as never)
             column.cardOrderIds.push(action.payload._id)
-            column.cards = column.cards.filter(card => !card.FE_PlaceholderCard)
-            column.cardOrderIds = column.cards.map(card => card._id)
+            column.cards = column.cards.filter((card) => !card.FE_PlaceholderCard)
+            column.cardOrderIds = column.cards.map((card) => card._id)
           }
         }
       })
@@ -195,14 +271,9 @@ const boardSlice = createSlice({
         }
       )
       .addMatcher<RejectedAction | FulfilledAction>(
-        (action) =>
-          action.type.endsWith('/rejected') ||
-          action.type.endsWith('/fulfilled'),
+        (action) => action.type.endsWith('/rejected') || action.type.endsWith('/fulfilled'),
         (state, action) => {
-          if (
-            state.loading &&
-            state.currentRequestId === action.meta.requestId
-          ) {
+          if (state.loading && state.currentRequestId === action.meta.requestId) {
             state.loading = false
             state.currentRequestId = undefined
           }
@@ -210,6 +281,8 @@ const boardSlice = createSlice({
       )
   }
 })
+export const { updateMoveDiffState, updateMoveOneState, updateMoveColumnState } = boardSlice.actions
+
 const boardReducer = boardSlice.reducer
 
 export default boardReducer

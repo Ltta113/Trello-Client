@@ -7,13 +7,9 @@ interface CarsProps {
   cards: ICard[]
 }
 
-
 function ListCards({ cards }: CarsProps) {
   return (
-    <SortableContext
-      items={cards?.map((c) => c._id)}
-      strategy={verticalListSortingStrategy}
-    >
+    <SortableContext items={cards?.map((c) => c._id)} strategy={verticalListSortingStrategy}>
       <Box
         sx={{
           p: '0 5px 5px 5px',

@@ -26,21 +26,15 @@ import TextField from '@mui/material/TextField'
 import { toast } from 'react-toastify'
 import { RootState, useAppDispatch } from '~/redux/store'
 import { useSelector } from 'react-redux'
-import { createNewCard } from '~/redux/boardSlice'
+import { createNewCard, deleteColumn } from '~/redux/boardSlice'
+import { useConfirm } from 'material-ui-confirm'
 
 type ColumProps = {
   column: IColumn
 } & HTMLAttributes<HTMLDivElement>
 
 function Column({ column, ...props }: ColumProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: column._id,
     data: { ...column }
   })
@@ -83,6 +77,18 @@ function Column({ column, ...props }: ColumProps) {
     setNewCardTitle('')
     dispatch(createNewCard(newCardData))
   }
+  const configrmDeleteColumn = useConfirm()
+  const handleDeleteColumn = () => {
+    configrmDeleteColumn({
+      title: 'Delete Column',
+      description: 'This action wil permanently delete your Column and its Cards! Are you sure?',
+      confirmationText: 'Confirm'
+    })
+      .then(() => {
+        dispatch(deleteColumn(column._id))
+      })
+      .catch(() => {})
+  }
 
   return (
     <div ref={setNodeRef} style={dndKitColumnStyles} {...props} {...attributes}>
@@ -91,13 +97,11 @@ function Column({ column, ...props }: ColumProps) {
         sx={{
           minWidth: '300px',
           maxWidth: '300px',
-          bgcolor: (theme) =>
-            theme.palette.mode === 'dark' ? '#333643' : '#ebecf0',
+          bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#333643' : '#ebecf0'),
           ml: 2,
           borderRadius: '6px',
           height: 'fit-content',
-          maxHeight: (theme) =>
-            `calc(${theme.trello.boardContentHeight} - ${theme.spacing(5)})`
+          maxHeight: (theme) => `calc(${theme.trello.boardContentHeight} - ${theme.spacing(5)})`
         }}
       >
         <Box
@@ -134,13 +138,24 @@ function Column({ column, ...props }: ColumProps) {
               anchorEl={anchorEl}
               open={open}
               onClose={handleClose}
+              onClick={handleClose}
               MenuListProps={{
                 'aria-labelledby': 'basic-column-dropdown'
               }}
             >
-              <MenuItem>
+              <MenuItem
+                onClick={toggleNewCardForm}
+                sx={{
+                  '&:hover': {
+                    color: 'success.light',
+                    '& .add-card-icon': {
+                      color: 'success.light'
+                    }
+                  }
+                }}
+              >
                 <ListItemIcon>
-                  <AddCardIcon fontSize="small" />
+                  <AddCardIcon className="add-card-icon" fontSize="small" />
                 </ListItemIcon>
                 <ListItemText>Add new card</ListItemText>
               </MenuItem>
@@ -169,11 +184,21 @@ function Column({ column, ...props }: ColumProps) {
                 </ListItemIcon>
                 <ListItemText>Archive this column</ListItemText>
               </MenuItem>
-              <MenuItem>
+              <MenuItem
+                onClick={handleDeleteColumn}
+                sx={{
+                  '&:hover': {
+                    color: 'warning.dark',
+                    '& .delete-forever-icon': {
+                      color: 'warning.dark'
+                    }
+                  }
+                }}
+              >
                 <ListItemIcon>
-                  <DeleteForeverIcon fontSize="small" />
+                  <DeleteForeverIcon className="delete-forever-icon" fontSize="small" />
                 </ListItemIcon>
-                <ListItemText>Remove this column</ListItemText>
+                <ListItemText>Delete this column</ListItemText>
               </MenuItem>
             </Menu>
           </Box>
@@ -226,8 +251,7 @@ function Column({ column, ...props }: ColumProps) {
                   '& label': { color: 'text.primary' },
                   '& input': {
                     color: (theme) => theme.palette.primary.main,
-                    bgcolor: (theme) =>
-                      theme.palette.mode === 'dark' ? '#333643' : 'white'
+                    bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#333643' : 'white')
                   },
                   '& label.Mui-focused': {
                     color: (theme) => theme.palette.primary.main

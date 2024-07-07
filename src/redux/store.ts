@@ -4,7 +4,7 @@ import boardReducer from './boardSlice'
 
 export const store = configureStore({
   reducer: { board: boardReducer },
-  middleware: getDefaultMiddleware => getDefaultMiddleware()
+  middleware: (getDefaultMiddleware) => getDefaultMiddleware()
 })
 
 // Lấy RootState và AppDispatch từ store của chúng ta

@@ -3,10 +3,7 @@ import Column from './Column/Column'
 import Button from '@mui/material/Button'
 import NoteAddIcon from '@mui/icons-material/NoteAdd'
 import { IColumn } from '~/apis/type'
-import {
-  SortableContext,
-  horizontalListSortingStrategy
-} from '@dnd-kit/sortable'
+import { SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable'
 import { useState } from 'react'
 import TextField from '@mui/material/TextField'
 import CloseIcon from '@mui/icons-material/Close'
@@ -47,10 +44,7 @@ function ListColumns({ columns }: ColumsBarProps) {
   }
 
   return (
-    <SortableContext
-      items={columns?.map((c) => c._id)}
-      strategy={horizontalListSortingStrategy}
-    >
+    <SortableContext items={columns?.map((c) => c._id)} strategy={horizontalListSortingStrategy}>
       <Box
         sx={{
           bgcolor: 'inherit',

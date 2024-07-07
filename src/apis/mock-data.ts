@@ -8,12 +8,7 @@ export const mockData: { board: IBoard } = {
     type: 'public', // 'private'
     ownerIds: [], // Những users là Admin của board
     memberIds: [], // Những users là member bình thường của board
-    columnOrderIds: [
-      'column-id-01',
-      'column-id-02',
-      'column-id-03',
-      'column-id-04'
-    ], // Thứ tự sắp xếp / vị trí của các Columns trong 1 boards
+    columnOrderIds: ['column-id-01', 'column-id-02', 'column-id-03', 'column-id-04'], // Thứ tự sắp xếp / vị trí của các Columns trong 1 boards
     columns: [
       {
         _id: 'column-id-01',
@@ -39,11 +34,7 @@ export const mockData: { board: IBoard } = {
               'https://trungquandev.com/wp-content/uploads/2022/07/fair-mern-stack-advanced-banner-trungquandev.jpg',
             memberIds: ['test-user-id-01'],
             comments: ['test comment 01', 'test comment 02'],
-            attachments: [
-              'test attachment 01',
-              'test attachment 02',
-              'test attachment 03'
-            ]
+            attachments: ['test attachment 01', 'test attachment 02', 'test attachment 03']
           },
           {
             _id: 'card-id-02',

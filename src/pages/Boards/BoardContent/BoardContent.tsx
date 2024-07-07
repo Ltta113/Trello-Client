@@ -30,7 +30,10 @@ import { useAppDispatch } from '~/redux/store'
 import {
   moveCardToDiffColumnAPI,
   updateBoardDetails,
-  updateColumnDetails
+  updateColumnDetails,
+  updateMoveColumnState,
+  updateMoveDiffState,
+  updateMoveOneState
 } from '~/redux/boardSlice'
 
 interface BoardBarProps {
@@ -61,58 +64,30 @@ function BoardContent({ board }: BoardBarProps) {
 
   const lastOverId = useRef<UniqueIdentifier | null>(null)
   const [orderedColumns, setOrderedColumns] = useState<IColumn[]>([])
-  const [activateDragItemId, setActivateDragItemId] = useState<string | null>(
-    null
-  )
-  const [activateDragItemData, setActivateDragItemData] = useState<
-    IColumn | ICard | undefined
-  >()
-  const [activateDragItemType, setActivateDragItemType] = useState<
-    string | null
-  >(null)
+  const [activateDragItemId, setActivateDragItemId] = useState<string | null>(null)
+  const [activateDragItemData, setActivateDragItemData] = useState<IColumn | ICard | undefined>()
+  const [activateDragItemType, setActivateDragItemType] = useState<string | null>(null)
   const [oldColumn, setOldColumn] = useState<IColumn | undefined>()
 
   const findColumnByCardId = (cardId: string) => {
-    return orderedColumns.find((column) =>
-      column?.cards?.map((card) => card._id)?.includes(cardId)
-    )
+    return orderedColumns.find((column) => column?.cards?.map((card) => card._id)?.includes(cardId))
   }
 
   const moveCardDiffColumn = (
     overColumn: IColumn,
-    overCardId: string,
     active: DragEndEvent['active'] | DragOverEvent['active'],
     over: DragEndEvent['over'] | DragOverEvent['over'],
     activateColumn: IColumn,
+    newCardIndex: number,
     activeDraggingCardData: ICard,
     triggerFrom?: string
   ) => {
     if (!active || !over) return
 
     setOrderedColumns((prev) => {
-      const overCardIdex = overColumn?.cards?.findIndex(
-        (card) => card._id === overCardId
-      )
-
-      let newCardIndex: number
-
-      const isBelowOverItem =
-        active.rect.current.translated &&
-        active.rect.current.translated.top > over.rect.top + over.rect.height
-      const modifier = isBelowOverItem ? 1 : 0
-
-      newCardIndex =
-        overCardIdex >= 0
-          ? overCardIdex + modifier
-          : overColumn?.cards?.length + 1
-
       const nextColumns: IColumn[] = cloneDeep(prev)
-      const nextActiveColumn = nextColumns.find(
-        (column) => column._id === activateColumn._id
-      )
-      const nextOverColumn = nextColumns.find(
-        (column) => column._id === overColumn._id
-      )
+      const nextActiveColumn = nextColumns.find((column) => column._id === activateColumn._id)
+      const nextOverColumn = nextColumns.find((column) => column._id === overColumn._id)
 
       if (nextActiveColumn) {
         nextActiveColumn.cards = nextActiveColumn.cards.filter(
@@ -123,9 +98,7 @@ function BoardContent({ board }: BoardBarProps) {
           nextActiveColumn.cards = [generatePlaceholder(nextActiveColumn)]
         }
 
-        nextActiveColumn.cardOrderIds = nextActiveColumn.cards.map(
-          (card) => card._id
-        )
+        nextActiveColumn.cardOrderIds = nextActiveColumn.cards.map((card) => card._id)
       }
 
       if (nextOverColumn) {
@@ -137,16 +110,12 @@ function BoardContent({ board }: BoardBarProps) {
           columnId: nextOverColumn._id
         } as ICard)
 
-        nextOverColumn.cards = nextOverColumn.cards.filter(
-          (card) => !card.FE_PlaceholderCard
-        )
+        nextOverColumn.cards = nextOverColumn.cards.filter((card) => !card.FE_PlaceholderCard)
 
-        nextOverColumn.cardOrderIds = nextOverColumn.cards.map(
-          (card) => card._id
-        )
+        nextOverColumn.cardOrderIds = nextOverColumn.cards.map((card) => card._id)
       }
 
-      let prevCardOrderIds = orderedColumns.find((c) => c._id === oldColumn?._id )?.cardOrderIds
+      let prevCardOrderIds = orderedColumns.find((c) => c._id === oldColumn?._id)?.cardOrderIds
       if (prevCardOrderIds && prevCardOrderIds[0].includes('placeholder-card')) {
         prevCardOrderIds = []
       }
@@ -157,10 +126,17 @@ function BoardContent({ board }: BoardBarProps) {
           prevColumnId: oldColumn?._id,
           prevCardOrderIds,
           nextColumnId: nextActiveColumn?._id,
-          nextCardOrderIds: orderedColumns.find(
-            (c) => c._id === nextActiveColumn?._id
-          )?.cardOrderIds
+          nextCardOrderIds: nextOverColumn?.cardOrderIds
         }
+        dispatch(
+          updateMoveDiffState({
+            cardId: activateDragItemId,
+            prevColumnId: oldColumn?._id,
+            nextColumnId: nextActiveColumn?._id,
+            cardData: activeDraggingCardData,
+            newCardIndex
+          })
+        )
         dispatch(moveCardToDiffColumnAPI(dataUpdate))
       }
 
@@ -205,12 +181,23 @@ function BoardContent({ board }: BoardBarProps) {
     if (!activateColumn || !overColumn) return
 
     if (activateColumn._id !== overColumn._id) {
+      const overCardIdex = overColumn?.cards?.findIndex((card) => card._id === overCardId)
+
+      let newCardIndex: number = 0
+
+      const isBelowOverItem =
+        active.rect.current.translated &&
+        active.rect.current.translated.top > over.rect.top + over.rect.height
+      const modifier = isBelowOverItem ? 1 : 0
+
+      newCardIndex = overCardIdex >= 0 ? overCardIdex + modifier : overColumn?.cards?.length + 1
+
       moveCardDiffColumn(
         overColumn,
-        overCardId as string,
         active,
         over,
         activateColumn,
+        newCardIndex,
         activeDraggingCardData as ICard,
         'handleDragOver'
       )
@@ -235,33 +222,44 @@ function BoardContent({ board }: BoardBarProps) {
       if (!activateColumn || !overColumn) return
 
       if (oldColumn?._id !== overColumn._id) {
+        const overCardIdex = overColumn?.cards?.findIndex((card) => card._id === overCardId)
+
+        let newCardIndex: number = 0
+
+        const isBelowOverItem =
+          active.rect.current.translated &&
+          active.rect.current.translated.top > over.rect.top + over.rect.height
+        const modifier = isBelowOverItem ? 1 : 0
+
+        newCardIndex = overCardIdex >= 0 ? overCardIdex + modifier : overColumn?.cards?.length + 1
+
         moveCardDiffColumn(
           overColumn,
-          overCardId as string,
           active,
           over,
           activateColumn,
+          newCardIndex,
           activeDraggingCardData as ICard,
           'handleDragEnd'
         )
       } else {
-        const oldIndex = oldColumn?.cards?.findIndex(
-          (c) => c._id === activateDragItemId
-        )
-        const newIndex = overColumn?.cards?.findIndex(
-          (c) => c._id === overCardId
-        )
+        const oldIndex = oldColumn?.cards?.findIndex((c) => c._id === activateDragItemId)
+        const newIndex = overColumn?.cards?.findIndex((c) => c._id === overCardId)
 
-        const dndOrderedCards = arrayMove<ICard>(
-          oldColumn?.cards,
-          oldIndex,
-          newIndex
-        )
+        const dndOrderedCards = arrayMove<ICard>(oldColumn?.cards, oldIndex, newIndex)
         const dndOrderedCardIds = dndOrderedCards.map((c) => c._id)
+
         dispatch(
           updateColumnDetails({
             columnId: oldColumn?._id as string,
             dataUpdate: { cardOrderIds: dndOrderedCardIds }
+          })
+        )
+        dispatch(
+          updateMoveOneState({
+            columnId: oldColumn._id,
+            listIdCardSorted: dndOrderedCardIds,
+            listCardSorted: dndOrderedCards
           })
         )
         setOrderedColumns((prev) => {
@@ -283,12 +281,16 @@ function BoardContent({ board }: BoardBarProps) {
       if (active.id !== over?.id) {
         const oldIndex = orderedColumns.findIndex((c) => c._id === active.id)
         const newIndex = orderedColumns.findIndex((c) => c._id === over?.id)
-        const dndOrderedColumns = arrayMove<IColumn>(
-          orderedColumns,
-          oldIndex,
-          newIndex
-        )
+        const dndOrderedColumns = arrayMove<IColumn>(orderedColumns, oldIndex, newIndex)
         const dndOrderedColumnsIds = dndOrderedColumns.map((c) => c._id)
+
+        dispatch(
+          updateMoveColumnState({
+            listColumn: dndOrderedColumns,
+            listColumnIds: dndOrderedColumnsIds
+          })
+        )
+
         dispatch(
           updateBoardDetails({
             boardId: board?._id as string,
@@ -331,20 +333,16 @@ function BoardContent({ board }: BoardBarProps) {
       let overId = getFirstCollision(pointerIntersecion, 'id')
 
       if (overId) {
-        const checkColumn = orderedColumns.find(
-          (column) => column._id === overId
-        )
+        const checkColumn = orderedColumns.find((column) => column._id === overId)
         if (checkColumn) {
           overId = closestCorners({
             ...args,
-            droppableContainers: args.droppableContainers.filter(
-              (container) => {
-                return (
-                  container.id !== overId &&
-                  checkColumn?.cardOrderIds?.includes(container.id as string)
-                )
-              }
-            )
+            droppableContainers: args.droppableContainers.filter((container) => {
+              return (
+                container.id !== overId &&
+                checkColumn?.cardOrderIds?.includes(container.id as string)
+              )
+            })
           })[0]?.id
         }
 
@@ -366,8 +364,7 @@ function BoardContent({ board }: BoardBarProps) {
     >
       <Box
         sx={{
-          bgcolor: (theme) =>
-            theme.palette.mode === 'dark' ? '#34495e' : '#1976d2',
+          bgcolor: (theme) => (theme.palette.mode === 'dark' ? '#34495e' : '#1976d2'),
           width: '100%',
           height: (theme) => theme.trello.boardContentHeight,
           p: '10px 0'

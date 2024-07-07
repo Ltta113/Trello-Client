@@ -17,14 +17,7 @@ type CardProps = {
 } & HTMLAttributes<HTMLDivElement>
 
 function Card({ card, ...props }: CardProps) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging
-  } = useSortable({
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: card._id,
     data: { ...card }
   })
@@ -37,11 +30,7 @@ function Card({ card, ...props }: CardProps) {
   }
 
   const shouldShowCardAction = () => {
-    return (
-      !!card?.memberIds?.length ||
-      !!card?.comments?.length ||
-      !!card?.attachments?.length
-    )
+    return !!card?.memberIds?.length || !!card?.comments?.length || !!card?.attachments?.length
   }
 
   return (

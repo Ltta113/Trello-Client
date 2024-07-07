@@ -5,7 +5,7 @@ export const capitalizeFirstLetter = (val: string) => {
   return `${val.charAt(0).toUpperCase()}${val.slice(1)}`
 }
 
-export const generatePlaceholder = (column: IColumn) : ICard => {
+export const generatePlaceholder = (column: IColumn): ICard => {
   return {
     _id: `${column._id}-placeholder-card`,
     boardId: column.boardId,
