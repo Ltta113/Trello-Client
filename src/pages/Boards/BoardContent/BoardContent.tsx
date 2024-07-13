@@ -223,7 +223,6 @@ function BoardContent({ board }: BoardBarProps) {
 
       if (oldColumn?._id !== overColumn._id) {
         const overCardIdex = overColumn?.cards?.findIndex((card) => card._id === overCardId)
-
         let newCardIndex: number = 0
 
         const isBelowOverItem =
@@ -250,16 +249,16 @@ function BoardContent({ board }: BoardBarProps) {
         const dndOrderedCardIds = dndOrderedCards.map((c) => c._id)
 
         dispatch(
-          updateColumnDetails({
-            columnId: oldColumn?._id as string,
-            dataUpdate: { cardOrderIds: dndOrderedCardIds }
-          })
-        )
-        dispatch(
           updateMoveOneState({
             columnId: oldColumn._id,
             listIdCardSorted: dndOrderedCardIds,
             listCardSorted: dndOrderedCards
+          })
+        )
+        dispatch(
+          updateColumnDetails({
+            columnId: oldColumn?._id as string,
+            dataUpdate: { cardOrderIds: dndOrderedCardIds }
           })
         )
         setOrderedColumns((prev) => {

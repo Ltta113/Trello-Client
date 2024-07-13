@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import { Card as MuiCard } from '@mui/material'
 import CardMedia from '@mui/material/CardMedia'
 import CardContent from '@mui/material/CardContent'
@@ -17,7 +18,7 @@ import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
 import { useAppDispatch } from '~/redux/store'
-import { updateCardDetails } from '~/redux/boardSlice'
+import { updateCardDetails, updateCardState } from '~/redux/boardSlice'
 
 type CardProps = {
   card: ICard
@@ -28,16 +29,16 @@ function Card({ card, ...props }: CardProps) {
     id: card._id,
     data: { ...card }
   })
+
   const [isEditing, setIsEditing] = useState<boolean>(false)
-  const [title, setTitle] = useState<string | undefined>(card?.title)
+  const [titleCard, setTitleCard] = useState<string | undefined>(card?.title)
   const cardRef = useRef<HTMLDivElement | null>(null)
   const dispatch = useAppDispatch()
-
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (cardRef.current && !cardRef.current.contains(event.target as Node)) {
         setIsEditing(false)
-        document.body.style.filter = ''
+        setTitleCard(card?.title)
       }
     }
 
@@ -50,21 +51,16 @@ function Card({ card, ...props }: CardProps) {
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
     }
-  }, [isEditing])
+  }, [card?.title, dispatch, isEditing])
 
-  const handleEditClick = () => {
+  const handleEditClick = async () => {
     setIsEditing(true)
-    document.body.style.filter = 'blur(4px)'
-    const textFields = document.querySelectorAll('MuiBox-root css-3j2svl') as NodeListOf<HTMLElement>
-    textFields.forEach((textField) => {
-      textField.style.filter = 'none'
-    })
   }
 
-  const handleSaveClick = () => {
+  const handleSaveClick = async () => {
     setIsEditing(false)
-    dispatch(updateCardDetails({ cardId: card._id, dataUpdate: { title: title } }))
-    document.body.style.filter = ''
+    dispatch(updateCardDetails({ cardId: card._id, dataUpdate: { title: titleCard } }))
+    dispatch(updateCardState({ cardId: card._id, title: titleCard, columnId: card.columnId }))
   }
 
   const dndKitCardStyles: React.CSSProperties = {
@@ -81,12 +77,12 @@ function Card({ card, ...props }: CardProps) {
   return (
     <Box
       ref={cardRef}
+      className="no-blur"
       sx={{
         position: 'relative',
         '&:hover .edit-icon': {
           visibility: 'visible'
-        },
-        filter: 'none'
+        }
       }}
     >
       <MuiCard
@@ -117,8 +113,8 @@ function Card({ card, ...props }: CardProps) {
         >
           {isEditing ? (
             <TextField
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={titleCard}
+              onChange={(e) => setTitleCard(e.target.value)}
               variant="outlined"
               data-no-dnd="true"
               fullWidth
@@ -135,6 +131,7 @@ function Card({ card, ...props }: CardProps) {
                   height: 200
                 }
               }}
+              onClick={(e) => e.stopPropagation()}
             />
           ) : (
             <Typography>{card?.title}</Typography>

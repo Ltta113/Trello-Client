@@ -177,6 +177,23 @@ const boardSlice = createSlice({
           }
         })
       }
+    },
+    updateColumnState: (state, action: PayloadAction<any>) => {
+      if (state.board && state.board.columns) {
+        const columnIdx = state.board.columns.findIndex((c) => c._id === action.payload.columnId)
+        state.board.columns[columnIdx].title = action.payload.title
+      }
+    },
+    updateCardState: (state, action: PayloadAction<any>) => {
+      if (state.board && state.board.columns) {
+        const columnIdx = state.board.columns.findIndex(
+          (column) => column._id === action.payload.columnId
+        )
+        const cardIdx = state.board.columns[columnIdx].cards.findIndex(
+          (card) => card._id === action.payload.cardId
+        )
+        state.board.columns[columnIdx].cards[cardIdx].title = action.payload.title
+      }
     }
   },
   extraReducers(builder) {
@@ -216,28 +233,28 @@ const boardSlice = createSlice({
             column.cardOrderIds = [generatePlaceholder(column)._id]
           } else {
             column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
-            // console.log(column.cardOrderIds)
           }
         })
       })
       .addCase(updateColumnDetails.pending, (state) => {
         state.loading = true
       })
-      .addCase(updateColumnDetails.fulfilled, (state, action) => {
+      .addCase(updateColumnDetails.fulfilled, (state, _action) => {
         state.loading = false
-        const columnIdx = state.board?.columns.findIndex(c => c._id === action.meta.arg.columnId)
-        if (state.board && state.board.columns[columnIdx as number])
-          state.board.columns[columnIdx as number] = action.payload
       })
       .addCase(updateCardDetails.pending, (state) => {
         state.loading = true
       })
       .addCase(updateCardDetails.fulfilled, (state, action) => {
         state.loading = false
-        const columnIdx = state.board?.columns.findIndex(c => c._id === action.payload.columnId)
+        const columnIdx = state.board?.columns.findIndex((c) => c._id === action.payload.columnId)
         if (state.board && state.board.columns[columnIdx as number]) {
-          const cardIdx = state.board?.columns[columnIdx as number].cards.findIndex(c => c._id === action.payload._id)
-          state.board.columns[columnIdx as number].cards[cardIdx] = action.payload
+          const cardIdx = state.board?.columns[columnIdx as number].cards.findIndex(
+            (c) => c._id === action.payload._id
+          )
+          if (action.meta.arg.dataUpdate.title)
+            state.board.columns[columnIdx as number].cards[cardIdx].title =
+              action.meta.arg.dataUpdate.title
         }
       })
       .addCase(deleteColumn.pending, (state) => {
@@ -307,7 +324,13 @@ const boardSlice = createSlice({
       )
   }
 })
-export const { updateMoveDiffState, updateMoveOneState, updateMoveColumnState } = boardSlice.actions
+export const {
+  updateMoveDiffState,
+  updateMoveOneState,
+  updateMoveColumnState,
+  updateColumnState,
+  updateCardState
+} = boardSlice.actions
 
 const boardReducer = boardSlice.reducer
 

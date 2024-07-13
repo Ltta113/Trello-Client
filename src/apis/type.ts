@@ -20,6 +20,8 @@ export interface ICard {
   comments?: string[]
   attachments?: string[]
   FE_PlaceholderCard?: boolean
+  checkListOrderIds?: string[]
+  checkLists: ICheckList[] | []
 }
 
 export interface IColumn {
@@ -28,4 +30,20 @@ export interface IColumn {
   title: string
   cardOrderIds: string[]
   cards: ICard[] | []
+}
+
+export interface ICheckList {
+  _id: string
+  cardId: string
+  title: string
+  listItemOrderIds: string[]
+  checkItems: ICheckItem[]
+}
+
+export interface ICheckItem {
+  _id: string
+  checkListId: string
+  title?: string
+  state: string
+  FE_PlaceholderCheckList?: boolean
 }

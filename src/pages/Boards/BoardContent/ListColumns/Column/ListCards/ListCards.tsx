@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 import Box from '@mui/material/Box'
 import Card from './Card/Card'
 import { ICard } from '~/apis/type'
@@ -5,9 +6,10 @@ import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable'
 
 interface CarsProps {
   cards: ICard[]
+  onCardClick: (cardId: string) => void
 }
 
-function ListCards({ cards }: CarsProps) {
+function ListCards({ cards, onCardClick }: CarsProps) {
   return (
     <SortableContext items={cards?.map((c) => c._id)} strategy={verticalListSortingStrategy}>
       <Box
@@ -31,7 +33,9 @@ function ListCards({ cards }: CarsProps) {
           '&::-webkit-scrollbar': { width: '7px' }
         }}
       >
-        {cards?.map((card) => <Card key={card._id} card={card} />)}
+        {cards?.map((card) => (
+          <Card key={card._id} card={card} onClick={() => onCardClick(card._id)} />
+        ))}
       </Box>
     </SortableContext>
   )

@@ -61,6 +61,18 @@ const theme = extendTheme({
         }
       }
     },
+    MuiListItemButton: {
+      styleOverrides: {
+        root: ({ theme }) => ({
+          backgroundColor: theme.palette.mode === 'light' ? '#dfe1e0' : '#1e1e1e',
+          borderRadius: '5px',
+          marginBottom: '5px',
+          '&:hover': {
+            backgroundColor: theme.palette.mode === 'light' ? '#e3e9e6' : ''
+          }
+        })
+      }
+    },
     MuiOutlinedInput: {
       styleOverrides: {
         root: {

@@ -7,7 +7,7 @@ import ListItemIcon from '@mui/material/ListItemIcon'
 import ContentCut from '@mui/icons-material/ContentCut'
 import Cloud from '@mui/icons-material/Cloud'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { HTMLAttributes, useState } from 'react'
+import { HTMLAttributes, useEffect, useRef, useState } from 'react'
 import Tooltip from '@mui/material/Tooltip'
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever'
 import ContentCopy from '@mui/icons-material/ContentCopy'
@@ -26,8 +26,15 @@ import TextField from '@mui/material/TextField'
 import { toast } from 'react-toastify'
 import { RootState, useAppDispatch } from '~/redux/store'
 import { useSelector } from 'react-redux'
-import { createNewCard, deleteColumn } from '~/redux/boardSlice'
+import {
+  createNewCard,
+  deleteColumn,
+  updateColumnDetails,
+  updateColumnState
+} from '~/redux/boardSlice'
 import { useConfirm } from 'material-ui-confirm'
+import { openCardDetail } from '~/redux/cardSlice'
+import CardDetailDialog from './CardDetail/CardDetail'
 
 type ColumProps = {
   column: IColumn
@@ -49,6 +56,43 @@ function Column({ column, ...props }: ColumProps) {
   const dispatch = useAppDispatch()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
+
+  const [isEditing, setIsEditing] = useState<boolean>(false)
+  const [editedTitle, setEditedTitle] = useState<string | undefined>(column.title)
+
+  const handleDoubleClick = () => {
+    setIsEditing(true)
+  }
+  const handleTitleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setEditedTitle(event.target.value)
+  }
+  const handleTitleBlur = () => {
+    setIsEditing(false)
+    // Bạn có thể thêm logic cập nhật tiêu đề ở đây, ví dụ:
+    dispatch(updateColumnState({ columnId: column._id, title: editedTitle }))
+
+    dispatch(
+      updateColumnDetails({
+        columnId: column._id,
+        dataUpdate: { title: editedTitle }
+      })
+    )
+  }
+
+  const isCardDetailOpen = useSelector((state: RootState) => state.card.openDetail)
+
+  const handleCardClick = (cardId: string) => {
+    dispatch(openCardDetail(cardId))
+  }
+
+  const textFieldRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    if (isEditing && textFieldRef.current) {
+      textFieldRef.current.select()
+    }
+  }, [isEditing])
+
   const handleClick = (event: React.MouseEvent<SVGSVGElement>) => {
     const buttonEvent = event as unknown as React.MouseEvent<HTMLButtonElement>
     setAnchorEl(buttonEvent.currentTarget)
@@ -71,7 +115,8 @@ function Column({ column, ...props }: ColumProps) {
     const newCardData = {
       title: newCardTitle,
       boardId: board?._id,
-      columnId: column._id
+      columnId: column._id,
+      description: '<p></p>'
     }
     toggleNewCardForm()
     setNewCardTitle('')
@@ -107,21 +152,47 @@ function Column({ column, ...props }: ColumProps) {
         <Box
           sx={{
             height: (theme) => theme.trello.columnHeaderHeight,
-            p: 2,
+            p: 1,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between'
           }}
         >
-          <Typography
-            variant="h6"
-            sx={{
-              fontWeight: 'bold',
-              cursor: 'pointer'
-            }}
-          >
-            {column?.title}
-          </Typography>
+          {isEditing ? (
+            <TextField
+              value={editedTitle}
+              onChange={handleTitleChange}
+              onBlur={handleTitleBlur}
+              inputRef={textFieldRef}
+              variant="outlined"
+              size="small"
+              autoFocus
+              data-no-dnd="true"
+              sx={{
+                p: 0,
+                '& .MuiOutlinedInput-input': {
+                  padding: '6px 8px',
+                  fontSize: '1.25rem',
+                  fontWeight: 'bold'
+                },
+                '& .MuiOutlinedInput-notchedOutline': {
+                  borderColor: 'transparent'
+                }
+              }}
+            />
+          ) : (
+            <Typography
+              variant="h6"
+              sx={{
+                p: 1,
+                fontWeight: 'bold',
+                cursor: 'pointer'
+              }}
+              onClick={handleDoubleClick}
+            >
+              {column?.title}
+            </Typography>
+          )}
           <Box>
             <Tooltip title="More options">
               <ExpandMoreIcon
@@ -204,8 +275,8 @@ function Column({ column, ...props }: ColumProps) {
           </Box>
         </Box>
 
-        <ListCards cards={orderedCards} />
-
+        <ListCards cards={orderedCards} onCardClick={handleCardClick} />
+        <CardDetailDialog open={isCardDetailOpen} column={column} />
         <Box
           sx={{
             height: (theme) => theme.trello.columnFooterHeight,
