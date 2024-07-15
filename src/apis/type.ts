@@ -17,7 +17,7 @@ export interface ICard {
   description?: string | null
   cover?: string | null
   memberIds?: string[]
-  comments?: string[]
+  comments?: IComment[] | []
   attachments?: string[]
   FE_PlaceholderCard?: boolean
   checkListOrderIds?: string[]
@@ -46,4 +46,11 @@ export interface ICheckItem {
   title?: string
   state: string
   FE_PlaceholderCheckList?: boolean
+}
+
+export interface IComment {
+  _id: string
+  description: string
+  createdAt: Date
+  updatedAt: Date | null
 }

@@ -13,6 +13,7 @@ import { IColumn } from '~/apis/type'
 import ListButton from './ListButton/ListButton'
 import DetailCard from './DetailCard/DetailCard'
 import CardContent from './CardContent/CardContent'
+import CardComment from './CardComment/CardComment'
 
 interface CardDetailDialogProps {
   open: boolean
@@ -59,7 +60,12 @@ const CardDetailDialog = ({ open, column }: CardDetailDialogProps) => {
           overflow: 'visible',
           overflowX: 'hidden',
           overflowY: 'scroll',
-          gap: 10
+          gap: 10,
+          '&::-webkit-scrollbar-thumb': { backgroundColor: '#ced0da' },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: '#bfc2cf'
+          },
+          '&::-webkit-scrollbar': { width: '7px' }
         }}
       >
         <IconButton
@@ -74,7 +80,6 @@ const CardDetailDialog = ({ open, column }: CardDetailDialogProps) => {
         >
           <CloseIcon />
         </IconButton>
-        {/* Render content based on loading state */}
         {
           <>
             <Box
@@ -86,7 +91,7 @@ const CardDetailDialog = ({ open, column }: CardDetailDialogProps) => {
                 gap: 1
               }}
             >
-              <VideoLabelOutlinedIcon />
+              <VideoLabelOutlinedIcon sx={{ p: 0.5, fontSize: 30 }} />
               <Box sx={{ flex: 1, alignItems: 'center', gap: 1, pt: 3 }}>
                 <Typography variant="h6">{selectedCard?.title}</Typography>
                 <Typography>trong danh sách {column.title}</Typography>
@@ -103,6 +108,8 @@ const CardDetailDialog = ({ open, column }: CardDetailDialogProps) => {
               <Box sx={{ width: '75%' }}>
                 <DetailCard />
                 <CardContent />
+                <CardComment />
+                <Box sx={{ minHeight: '50px' }}></Box>
               </Box>
               <Box sx={{ width: '25%', mb: 10 }}>
                 <ListButton></ListButton>
@@ -110,7 +117,6 @@ const CardDetailDialog = ({ open, column }: CardDetailDialogProps) => {
             </Box>
           </>
         }
-        <Box sx={{ minHeight: '100px' }}></Box>
       </Box>
     </Modal>
   )

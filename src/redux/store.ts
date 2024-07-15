@@ -4,13 +4,15 @@ import boardReducer from './boardSlice'
 import cardReducer from './cardSlice'
 import checkListReducer from './checkListSlice'
 import checkItemReducer from './checktemSlice'
+import commentReducer from './commentSlide'
 
 export const store = configureStore({
   reducer: {
     checkItem: checkItemReducer,
     board: boardReducer,
     card: cardReducer,
-    checkList: checkListReducer
+    checkList: checkListReducer,
+    comment: commentReducer
   },
   middleware: (getDefaultMiddleware) => getDefaultMiddleware()
 })

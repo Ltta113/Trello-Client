@@ -4,7 +4,7 @@
 
 import { createSlice, AsyncThunk, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { isEmpty } from 'lodash'
-import { ICard, ICheckItem, ICheckList } from '~/apis/type'
+import { ICard, ICheckItem, ICheckList, IComment } from '~/apis/type'
 import instance from '~/axiosConfig'
 import { generatePlaceholderCI } from '~/utils/formatters'
 import { mapOrder } from '~/utils/sort'
@@ -68,6 +68,17 @@ export const createNewCheckItem: AsyncThunk<ICheckItem, any, any> = createAsyncT
     return thunkAPI.rejectWithValue(error.response.data)
   }
 })
+export const createNewComment: AsyncThunk<IComment, any, any> = createAsyncThunk<IComment, any>(
+  'comment/createComment',
+  async (body, thunkAPI) => {
+    try {
+      const response = await instance.post<IComment>('/v1/comments', body)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
 export const updateCheckItemAPI: AsyncThunk<ICheckItem, any, any> = createAsyncThunk<
   ICheckItem,
   any
@@ -84,6 +95,17 @@ export const updateCheckList: AsyncThunk<ICheckList, any, any> = createAsyncThun
   async ({ checkListId, dataUpdate }, thunkAPI) => {
     try {
       const response = await instance.put<ICheckList>(`/v1/checkLists/${checkListId}`, dataUpdate)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
+export const updateCommentAPI: AsyncThunk<IComment, any, any> = createAsyncThunk<IComment, any>(
+  'comments/updateCommentAPI',
+  async ({ commentId, dataUpdate }, thunkAPI) => {
+    try {
+      const response = await instance.put<IComment>(`/v1/comments/${commentId}`, dataUpdate)
       return response.data
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data)
@@ -118,6 +140,17 @@ export const deleteCheckListAPI: AsyncThunk<string, any, any> = createAsyncThunk
   async (checkListId, thunkAPI) => {
     try {
       const response = await instance.delete<string>(`/v1/checkLists/${checkListId}`)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
+export const deleteCommentAPI: AsyncThunk<string, any, any> = createAsyncThunk<string, any>(
+  'cards/deleteComment',
+  async (commentId, thunkAPI) => {
+    try {
+      const response = await instance.delete<string>(`/v1/comments/${commentId}`)
       return response.data
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data)
@@ -172,8 +205,25 @@ const cardSlice = createSlice({
         const checkItemIdx = state.card.checkLists[checkListIdx].checkItems.findIndex(
           (checkItem) => checkItem._id === action.payload.checkItemId
         )
-
-        state.card.checkLists[checkListIdx].checkItems[checkItemIdx].title = action.payload.title
+        if (checkItemIdx !== -1) {
+          const checkItem = state.card.checkLists[checkListIdx].checkItems[checkItemIdx]
+          if (action.payload.title !== undefined) {
+            checkItem.title = action.payload.title
+          }
+          if (action.payload.state !== undefined) {
+            checkItem.state = action.payload.state
+          }
+        }
+      }
+    },
+    updateCommentState: (state, action: PayloadAction<any>) => {
+      if (state.card && state.card.comments) {
+        const commentIdx = state.card.comments.findIndex(
+          (comment) => comment._id === action.payload.commentId
+        )
+        if (commentIdx !== -1) {
+          state.card.comments[commentIdx].description = action.payload.description
+        }
       }
     },
     moveCheckItemToDiffState: (state, action: PayloadAction<any>) => {
@@ -253,6 +303,13 @@ const cardSlice = createSlice({
             }
           })
       })
+      .addCase(createNewComment.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(createNewComment.fulfilled, (state, action) => {
+        state.loading = false
+        state.card?.comments?.push(action.payload as never)
+      })
       .addCase(createNewCheckItem.pending, (state) => {
         state.loading = true
       })
@@ -297,6 +354,12 @@ const cardSlice = createSlice({
       .addCase(updateCheckItemAPI.fulfilled, (state, _action) => {
         state.loading = false
       })
+      .addCase(updateCommentAPI.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(updateCommentAPI.fulfilled, (state, _action) => {
+        state.loading = false
+      })
       .addCase(moveCheckList.pending, (state) => {
         state.loading = true
       })
@@ -337,6 +400,16 @@ const cardSlice = createSlice({
           )
         }
       })
+      .addCase(deleteCommentAPI.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(deleteCommentAPI.fulfilled, (state, action) => {
+        state.loading = false
+        state.success = true
+        if (state.card?.comments) {
+          state.card.comments = state.card?.comments.filter((c) => c._id !== action.meta.arg)
+        }
+      })
       .addMatcher<PendingAction>(
         (action) => action.type.endsWith('/pending'),
         (state, action) => {
@@ -362,7 +435,8 @@ export const {
   updateState,
   moveCheckItemToDiffState,
   updateCheckListState,
-  updateCheckItemState
+  updateCheckItemState,
+  updateCommentState
 } = cardSlice.actions
 
 const cardReducer = cardSlice.reducer

@@ -39,7 +39,7 @@ function DetailCard() {
   return (
     <Box>
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <SubjectIcon />
+        <SubjectIcon sx={{ p: 0.5, fontSize: 30 }} />
         <Typography variant="subtitle1" sx={{ mb: 0, fontWeight: 'bold' }}>
           Mô tả
         </Typography>

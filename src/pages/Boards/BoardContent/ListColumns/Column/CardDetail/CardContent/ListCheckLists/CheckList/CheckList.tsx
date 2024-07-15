@@ -100,6 +100,9 @@ function CheckList({ checkList, ...props }: CheckListProps) {
   const [progress, setProgress] = useState<number>(
     checkList.checkItems.filter((item) => item.state !== 'incomplete').length
   )
+  useEffect(() => {
+    setProgress(checkList.checkItems.filter((item) => item.state !== 'incomplete').length)
+  }, [checkList])
   const orderedCheckItem = mapOrder(checkList?.checkItems, checkList.listItemOrderIds, '_id')
   const numOfItem = checkList.checkItems.length
   const calcPercent = () => (numOfItem !== 0 ? Math.floor((progress / numOfItem) * 100) : 0)
@@ -107,7 +110,7 @@ function CheckList({ checkList, ...props }: CheckListProps) {
     <div ref={setNodeRef} style={dndKitCheckListStyles} {...props} {...attributes}>
       <Box sx={{ cursor: 'pointer', position: 'relative' }} {...listeners}>
         <Box sx={{ display: 'flex', gap: 1, mb: 1, mt: 2 }}>
-          <CheckBoxOutlinedIcon />
+          <CheckBoxOutlinedIcon sx={{ p: 0.5, fontSize: 30 }} />
           {update ? (
             <Box sx={{ width: '100%', ml: 1.1, borderWidth: '2px' }} data-no-dnd="true">
               <TextField
@@ -215,7 +218,7 @@ function CheckList({ checkList, ...props }: CheckListProps) {
                 }}
               >
                 <Box sx={{ width: '10%' }}></Box>
-                <Typography sx={{ pt: 1, fontWeight: 'bold' }}>
+                <Typography sx={{ pt: 1, fontWeight: 'bold', textAlign: 'center' }}>
                   Bạn muốn xoá {checkList.title}?
                 </Typography>
                 <Box sx={{ width: '10%' }}>
@@ -237,11 +240,11 @@ function CheckList({ checkList, ...props }: CheckListProps) {
                 variant="contained"
                 size="small"
                 sx={{
-                  bgcolor: 'red',
+                  bgcolor: '#c0392b',
                   width: '95%',
                   height: '35px',
                   m: 1,
-                  '&:hover': { bgcolor: 'red' }
+                  '&:hover': { bgcolor: '#e74c3c' }
                 }}
                 onClick={finishDelete}
               >

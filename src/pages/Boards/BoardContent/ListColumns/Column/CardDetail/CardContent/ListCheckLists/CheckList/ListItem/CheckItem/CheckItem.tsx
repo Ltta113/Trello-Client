@@ -38,7 +38,16 @@ const CheckItem = ({ checkItem, progress, setProgress, ...props }: CheckItemProp
     const newProgress = progress + (checked ? -1 : 1)
     setProgress(newProgress)
     dispatch(updateState({ checkItemId: checkItem._id }))
+    const state = checked === true ? 'incomplete' : 'complete'
     setChecked(!checked)
+    dispatch(updateCheckItemAPI({ checkItemId: checkItem._id, dataUpdate: { state: state } }))
+    dispatch(
+      updateCheckItemState({
+        checkItemId: checkItem._id,
+        checkListId: checkItem.checkListId,
+        state: state
+      })
+    )
   }
 
   useEffect(() => {
