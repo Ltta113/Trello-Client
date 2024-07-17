@@ -54,3 +54,16 @@ export interface IComment {
   createdAt: Date
   updatedAt: Date | null
 }
+
+export interface IError {
+  message: string,
+  statusCode: number
+}
+
+export interface IUser {
+  _id: string,
+  firstname: string,
+  lastname: string,
+  email: string,
+  isBlocked: boolean
+}

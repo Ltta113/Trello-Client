@@ -9,9 +9,11 @@ import { fetchBoardDetails } from '~/redux/boardSlice'
 import CircularProgress from '@mui/material/CircularProgress'
 import Box from '@mui/material/Box'
 import { Typography } from '@mui/material'
+import { toast } from 'react-toastify'
 
 function Board() {
   const board = useSelector((state: RootState) => state.board.board)
+  const error = useSelector((state: RootState) => state.board.error)
   const dispatch = useAppDispatch()
   // const [board, setBoard] = useState<IBoard>()
 
@@ -22,6 +24,11 @@ function Board() {
       promise.abort()
     }
   }, [dispatch])
+  useEffect(() => {
+    if (error) {
+      toast.error(`Error: ${error.statusCode} - ${error.message}`)
+    }
+  }, [error])
   if (!board) {
     return (
       <Box

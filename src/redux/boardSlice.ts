@@ -4,7 +4,7 @@
 
 import { createSlice, createAsyncThunk, AsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { isEmpty } from 'lodash'
-import { IBoard, ICard, IColumn } from '~/apis/type'
+import { IBoard, ICard, IColumn, IError } from '~/apis/type'
 import instance from '~/axiosConfig'
 import { generatePlaceholder } from '~/utils/formatters'
 import { mapOrder } from '~/utils/sort'
@@ -19,7 +19,7 @@ export interface BoardState {
   board: IBoard | undefined
   loading: boolean
   success: boolean
-  message: string
+  error: IError | undefined
   currentRequestId: undefined | string
 }
 
@@ -27,7 +27,7 @@ const initialState: BoardState = {
   board: undefined,
   loading: false,
   success: false,
-  message: '',
+  error: undefined,
   currentRequestId: undefined
 }
 export const fetchBoardDetails: AsyncThunk<IBoard, string, any> = createAsyncThunk<IBoard, string>(
@@ -215,6 +215,11 @@ const boardSlice = createSlice({
         })
         if (state.board.columns && state.board.columnOrderIds)
           state.board.columns = mapOrder(state.board?.columns, state.board?.columnOrderIds, '_id')
+      })
+      .addCase(fetchBoardDetails.rejected, (state, action) => {
+        state.board = undefined
+        state.loading = true
+        state.error = action.payload as IError
       })
       .addCase(moveCardToDiffColumnAPI.fulfilled, (state, _action) => {
         state.loading = false

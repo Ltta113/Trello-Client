@@ -4,7 +4,7 @@
 
 import { createSlice, AsyncThunk, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { isEmpty } from 'lodash'
-import { ICard, ICheckItem, ICheckList, IComment } from '~/apis/type'
+import { ICard, ICheckItem, ICheckList, IComment, IError } from '~/apis/type'
 import instance from '~/axiosConfig'
 import { generatePlaceholderCI } from '~/utils/formatters'
 import { mapOrder } from '~/utils/sort'
@@ -21,7 +21,7 @@ export interface CardState {
   openDetail: boolean
   loading: boolean
   success: boolean
-  message: string
+  error: IError | undefined
   currentRequestId: undefined | string
 }
 
@@ -31,7 +31,7 @@ const initialState: CardState = {
   openDetail: false,
   loading: false,
   success: false,
-  message: '',
+  error: undefined,
   currentRequestId: undefined
 }
 
@@ -42,7 +42,7 @@ export const fetchCardDetails: AsyncThunk<ICard, string, any> = createAsyncThunk
       const response = await instance.get<ICard>(`/v1/cards/${cardId}`)
       return response.data
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data)
+      return thunkAPI.rejectWithValue(error.response.data as IError)
     }
   }
 )
@@ -54,7 +54,7 @@ export const createNewCheckList: AsyncThunk<ICheckList, any, any> = createAsyncT
     const response = await instance.post<ICheckList>('/v1/checkLists', body)
     return response.data
   } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.response.data)
+    return thunkAPI.rejectWithValue(error.response.data as IError)
   }
 })
 export const createNewCheckItem: AsyncThunk<ICheckItem, any, any> = createAsyncThunk<
@@ -65,7 +65,7 @@ export const createNewCheckItem: AsyncThunk<ICheckItem, any, any> = createAsyncT
     const response = await instance.post<ICheckItem>('/v1/checkItems', body)
     return response.data
   } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.response.data)
+    return thunkAPI.rejectWithValue(error.response.data as IError)
   }
 })
 export const createNewComment: AsyncThunk<IComment, any, any> = createAsyncThunk<IComment, any>(
@@ -75,7 +75,7 @@ export const createNewComment: AsyncThunk<IComment, any, any> = createAsyncThunk
       const response = await instance.post<IComment>('/v1/comments', body)
       return response.data
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data)
+      return thunkAPI.rejectWithValue(error.response.data as IError)
     }
   }
 )
@@ -87,7 +87,7 @@ export const updateCheckItemAPI: AsyncThunk<ICheckItem, any, any> = createAsyncT
     const response = await instance.put<ICheckItem>(`/v1/checkItems/${checkItemId}`, dataUpdate)
     return response.data
   } catch (error: any) {
-    return thunkAPI.rejectWithValue(error.response.data)
+    return thunkAPI.rejectWithValue(error.response.data as IError)
   }
 })
 export const updateCheckList: AsyncThunk<ICheckList, any, any> = createAsyncThunk<ICheckList, any>(
@@ -97,7 +97,7 @@ export const updateCheckList: AsyncThunk<ICheckList, any, any> = createAsyncThun
       const response = await instance.put<ICheckList>(`/v1/checkLists/${checkListId}`, dataUpdate)
       return response.data
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data)
+      return thunkAPI.rejectWithValue(error.response.data as IError)
     }
   }
 )
@@ -108,7 +108,7 @@ export const updateCommentAPI: AsyncThunk<IComment, any, any> = createAsyncThunk
       const response = await instance.put<IComment>(`/v1/comments/${commentId}`, dataUpdate)
       return response.data
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data)
+      return thunkAPI.rejectWithValue(error.response.data as IError)
     }
   }
 )
@@ -120,7 +120,7 @@ export const moveCheckList: AsyncThunk<ICard, { cardId: string; dataUpdate: any 
         const response = await instance.put<ICard>(`/v1/cards/${cardId}`, dataUpdate)
         return response.data
       } catch (error: any) {
-        return thunkAPI.rejectWithValue(error.response.data)
+        return thunkAPI.rejectWithValue(error.response.data as IError)
       }
     }
   )
@@ -131,7 +131,7 @@ export const moveCheckItemToDiffAPI: AsyncThunk<string, any, any> = createAsyncT
       const response = await instance.put<string>('/v1/cards/support/move_checkItem', dataUpdate)
       return response.data
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data)
+      return thunkAPI.rejectWithValue(error.response.data as IError)
     }
   }
 )
@@ -142,7 +142,7 @@ export const deleteCheckListAPI: AsyncThunk<string, any, any> = createAsyncThunk
       const response = await instance.delete<string>(`/v1/checkLists/${checkListId}`)
       return response.data
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data)
+      return thunkAPI.rejectWithValue(error.response.data as IError)
     }
   }
 )
@@ -153,7 +153,7 @@ export const deleteCommentAPI: AsyncThunk<string, any, any> = createAsyncThunk<s
       const response = await instance.delete<string>(`/v1/comments/${commentId}`)
       return response.data
     } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data)
+      return thunkAPI.rejectWithValue(error.response.data as IError)
     }
   }
 )
@@ -287,6 +287,11 @@ const cardSlice = createSlice({
               )
             }
           })
+      })
+      .addCase(fetchCardDetails.rejected, (state, action) => {
+        state.card = undefined
+        state.loading = false
+        state.error = action.payload as IError
       })
       .addCase(createNewCheckList.pending, (state) => {
         state.loading = true

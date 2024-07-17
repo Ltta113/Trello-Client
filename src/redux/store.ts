@@ -5,9 +5,11 @@ import cardReducer from './cardSlice'
 import checkListReducer from './checkListSlice'
 import checkItemReducer from './checktemSlice'
 import commentReducer from './commentSlide'
+import userReducer from './userSlice'
 
 export const store = configureStore({
   reducer: {
+    user: userReducer,
     checkItem: checkItemReducer,
     board: boardReducer,
     card: cardReducer,

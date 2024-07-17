@@ -1,6 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import App from '~/App.tsx'
+import { RouterProvider } from 'react-router-dom'
 import { CssBaseline } from '@mui/material'
 import theme from '~/theme.ts'
 import { Experimental_CssVarsProvider as CssVarsProvider } from '@mui/material/styles'
@@ -9,6 +9,7 @@ import 'react-toastify/dist/ReactToastify.css'
 import { Provider } from 'react-redux'
 import { store } from './redux/store'
 import { ConfirmProvider } from 'material-ui-confirm'
+import router from './router'
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
@@ -27,7 +28,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
           }}
         >
           <CssBaseline />
-          <App />
+          <RouterProvider router={router} />
           <ToastContainer position="bottom-left" theme="colored" />
         </ConfirmProvider>
       </CssVarsProvider>

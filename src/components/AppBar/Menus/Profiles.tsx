@@ -9,8 +9,12 @@ import IconButton from '@mui/material/IconButton'
 import PersonAdd from '@mui/icons-material/PersonAdd'
 import Settings from '@mui/icons-material/Settings'
 import Logout from '@mui/icons-material/Logout'
+import { useAppDispatch } from '~/redux/store'
+import { logoutUser } from '~/redux/userSlice'
 
 export default function Profiles() {
+  const dispatch = useAppDispatch()
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
   const handleClick = (event: React.MouseEvent<HTMLButtonElement>) => {
@@ -67,7 +71,7 @@ export default function Profiles() {
           </ListItemIcon>
           Settings
         </MenuItem>
-        <MenuItem>
+        <MenuItem onClick={() => dispatch(logoutUser())}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>

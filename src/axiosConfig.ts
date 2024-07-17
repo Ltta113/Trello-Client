@@ -6,26 +6,30 @@ const instance = axios.create({
   baseURL: API_ROOT
 })
 
-// instance.interceptors.request.use(
-//   function (config) {
-//     // Do something before request is sent
-//     let token =
-//       window.localStorage.getItem('persist:auth') &&
-//       JSON.parse(window.localStorage.getItem('persist:auth'))?.token?.slice(
-//         1,
-//         -1
-//       )
-//     config.headers = {
-//       authorization: token ? `Bearer ${token}` : null
-//     }
+instance.interceptors.request.use(
+  function (config) {
+    const tokenString = window.localStorage.getItem('access')
+    let token = null
 
-//     return config
-//   },
-//   function (error) {
-//     // Do something with request error
-//     return Promise.reject(error)
-//   }
-// )
+    if (tokenString) {
+      try {
+        token = JSON.parse(tokenString)
+      } catch (e) {
+        console.error('Error parsing token from localStorage', e)
+      }
+    }
+
+    // Thiết lập header Authorization nếu có token
+    if (token) {
+      config.headers.Authorization = 'Bearer ' + token
+    }
+    return config
+  },
+  function (error) {
+    // Xử lý lỗi khi gửi request
+    return Promise.reject(error)
+  }
+)
 
 // Add a response interceptor
 instance.interceptors.response.use(
