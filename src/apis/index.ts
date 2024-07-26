@@ -1,20 +1,18 @@
 import instance from '~/axiosConfig'
-import { IBoard, ICard, IColumn } from './type'
+import { IBoard, ILabel } from './type'
 
-export const fetchBoardDetailsAPI = async (boardId: string): Promise<IBoard> => {
-  const response = await instance.get<IBoard>(`/v1/boards/${boardId}`)
-
-  return response.data
-}
-
-export const createNewColumnAPI = async (newColumnData: IColumn): Promise<IColumn> => {
-  const response = await instance.post<IColumn>('v1/columns', newColumnData)
+export const fetchListBoardOwnerAPI = async (): Promise<IBoard[]> => {
+  const response = await instance.get<IBoard[]>('/v1/boards/')
 
   return response.data
 }
+export const fetchListBoardMemberAPI = async (): Promise<IBoard[]> => {
+  const response = await instance.get<IBoard[]>('/v1/boards/mem')
 
-export const createNewCardAPI = async (newCardData: ICard): Promise<ICard> => {
-  const response = await instance.post<ICard>('v1/cards', newCardData)
-
+  return response.data
+}
+export const fetchLabelsAPI = async (boardId: string): Promise<ILabel[]> => {
+  // Gửi yêu cầu GET với boardId là query parameter
+  const response = await instance.get<ILabel[]>(`/v1/labels/all/${boardId}`)
   return response.data
 }

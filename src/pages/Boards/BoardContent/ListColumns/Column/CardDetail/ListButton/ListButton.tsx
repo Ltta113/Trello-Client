@@ -7,29 +7,44 @@ import List from '@mui/material/List'
 import ListItemButton from '@mui/material/ListItemButton'
 import ListItemIcon from '@mui/material/ListItemIcon'
 import ListItemText from '@mui/material/ListItemText'
-import InboxIcon from '@mui/icons-material/MoveToInbox'
-import DraftsIcon from '@mui/icons-material/Drafts'
+import RollerShadesClosedOutlinedIcon from '@mui/icons-material/RollerShadesClosedOutlined'
 import TextField from '@mui/material/TextField'
 import { useState } from 'react'
 import { createNewCheckList } from '~/redux/cardSlice'
 import { RootState, useAppDispatch } from '~/redux/store'
 import { useSelector } from 'react-redux'
 import CloseIcon from '@mui/icons-material/Close'
+import SellOutlinedIcon from '@mui/icons-material/SellOutlined'
+import LabelForm from './LabelForm/LabelForm'
+import Cover from './LabelForm/Cover/Cover'
+import AttachFileOutlinedIcon from '@mui/icons-material/AttachFileOutlined'
+import Attachment from './Attachment/Attachment'
 
 function ListButton() {
   const [createCheckList, setCreateCheckList] = useState<boolean>(false)
+  const [createLabel, setCreateLabel] = useState<boolean>(false)
+  const [createAttachment, setCreateAttachment] = useState<boolean>(false)
+  const [cover, setCover] = useState<boolean>(false)
   const [titleCL, setTitleCL] = useState<string | null>('')
   const dispatch = useAppDispatch()
   const cardId = useSelector((state: RootState) => state.card.cardId)
+  const board = useSelector((state: RootState) => state.board.board)
 
   const handleCreateCheckList = () => {
     setCreateCheckList(false)
-    dispatch(createNewCheckList({ cardId: cardId, title: titleCL }))
+    dispatch(createNewCheckList({ cardId: cardId, title: titleCL, boardId: board?._id }))
     setTitleCL('')
   }
   return (
     <List sx={{ width: '100%', m: 0 }}>
       <Box>
+        <ListItemButton sx={{ position: 'relative' }} onClick={() => setCreateLabel(!createLabel)}>
+          <ListItemIcon>
+            <SellOutlinedIcon />
+          </ListItemIcon>
+          <ListItemText primary="Nhãn" />
+        </ListItemButton>
+        {createLabel && <LabelForm createLabel={createLabel} setCreateLabel={setCreateLabel} />}
         <ListItemButton
           sx={{ position: 'relative' }}
           onClick={() => setCreateCheckList(!createCheckList)}
@@ -53,7 +68,7 @@ function ListButton() {
               maxHeight: '150px',
               padding: '4px 8px',
               borderRadius: 1,
-              bgcolor: (theme) => (theme.palette.mode === 'light' ? '#e3e9e6' : '#2b2e36'),
+              bgcolor: (theme) => (theme.palette.mode === 'light' ? 'white' : '#2b2e36'),
               boxShadow: 24,
               display: 'flex',
               flexDirection: 'column',
@@ -114,18 +129,20 @@ function ListButton() {
           </Box>
         )}
       </Box>
-      <ListItemButton>
+      <ListItemButton sx={{ position: 'relative' }} onClick={() => setCover(!cover)}>
         <ListItemIcon>
-          <DraftsIcon />
+          <RollerShadesClosedOutlinedIcon />
         </ListItemIcon>
-        <ListItemText primary="Drafts" />
+        <ListItemText primary="Ảnh bìa" />
       </ListItemButton>
-      <ListItemButton>
+      {cover && <Cover coverOpen={cover} setCoverOpen={setCover} />}
+      <ListItemButton sx={{ position: 'relative' }} onClick={() => setCreateAttachment(!createAttachment)}>
         <ListItemIcon>
-          <InboxIcon />
+          <AttachFileOutlinedIcon sx={{ transform: 'rotate(45deg)' }} />
         </ListItemIcon>
-        <ListItemText primary="Inbox" />
+        <ListItemText primary="Đính kèm" />
       </ListItemButton>
+      {createAttachment && <Attachment createAttachment={createAttachment} setCreateAttachment={setCreateAttachment} />}
     </List>
   )
 }

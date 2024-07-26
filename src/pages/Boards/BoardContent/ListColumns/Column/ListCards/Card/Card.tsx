@@ -17,8 +17,10 @@ import IconButton from '@mui/material/IconButton'
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined'
 import Box from '@mui/material/Box'
 import TextField from '@mui/material/TextField'
-import { useAppDispatch } from '~/redux/store'
+import { RootState, useAppDispatch } from '~/redux/store'
 import { updateCardDetails, updateCardState } from '~/redux/boardSlice'
+import { getColorByName } from '~/assets/labels'
+import { useSelector } from 'react-redux'
 
 type CardProps = {
   card: ICard
@@ -33,6 +35,8 @@ function Card({ card, ...props }: CardProps) {
   const [isEditing, setIsEditing] = useState<boolean>(false)
   const [titleCard, setTitleCard] = useState<string | undefined>(card?.title)
   const cardRef = useRef<HTMLDivElement | null>(null)
+  const board = useSelector((state: RootState) => state.board.board)
+
   const dispatch = useAppDispatch()
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -103,7 +107,67 @@ function Card({ card, ...props }: CardProps) {
           minHeight: isEditing ? 200 : 'auto'
         }}
       >
-        {card?.cover && <CardMedia sx={{ height: 140 }} image={card?.cover} />}
+        {card?.cover && (
+          <Box>
+            {card?.cover?.idCloudImage && (
+              <CardMedia
+                component="img"
+                sx={{ height: 140, borderRadius: 1 }}
+                image={card?.cover?.idCloudImage || ''}
+              />
+            )}
+            {card?.cover?.idAttachment && (
+              <CardMedia
+                component="img"
+                sx={{
+                  height: 140,
+                  borderRadius: 1
+                }}
+                image={
+                  card?.attachments?.find((att) => att._id === card?.cover?.idAttachment)?.url || ''
+                }
+              />
+            )}
+            {card?.cover?.color && (
+              <Box
+                sx={{ height: 140, bgcolor: getColorByName(card?.cover?.color), borderRadius: 1 }}
+              ></Box>
+            )}
+          </Box>
+        )}
+
+        {board?.labels && (
+          <Box
+            sx={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              pl: 1,
+              gap: 0.5
+            }}
+          >
+            {board?.labels
+              .filter((label) => label.listCard.includes(card._id))
+              .map((label, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    height: 16,
+                    bgcolor: getColorByName(label.color),
+                    borderRadius: 1,
+                    mt: 1,
+                    p: 1,
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap'
+                  }}
+                >
+                  {label.title}
+                </Box>
+              ))}
+          </Box>
+        )}
         <CardContent
           sx={{
             p: 1.5,

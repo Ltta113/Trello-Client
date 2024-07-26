@@ -2,12 +2,14 @@
 export interface IBoard {
   _id: string
   title: string
-  description: string
+  description: string,
+  slug: string,
   type: 'public' | 'private'
   ownerIds: string[]
   memberIds?: string[]
   columnOrderIds?: string[]
   columns: IColumn[] | []
+  labels: ILabel[] | []
 }
 export interface ICard {
   _id: string
@@ -15,13 +17,41 @@ export interface ICard {
   columnId: string
   title?: string
   description?: string | null
-  cover?: string | null
+  cover?: {
+    idAttachment: string | null;
+    color: string | null;
+    idCloudImage: string | null;
+    size: 'full' | 'half';
+    brightness: 'light' | 'dark';
+  } | null
   memberIds?: string[]
   comments?: IComment[] | []
-  attachments?: string[]
+  attachments?: IAttachment[] | []
   FE_PlaceholderCard?: boolean
   checkListOrderIds?: string[]
   checkLists: ICheckList[] | []
+  labels: ILabel[] | []
+}
+
+export interface IAttachment {
+  _id: string
+  cardId: string
+  userId: string
+  name: string
+  fileName: string
+  mimeType: string
+  url: string
+  createdAt: Date
+  updatedAt: Date | null
+}
+
+
+export interface ILabel {
+  _id: string
+  boardId: string
+  listCard: string[]
+  title: string
+  color: string
 }
 
 export interface IColumn {
@@ -35,6 +65,7 @@ export interface IColumn {
 export interface ICheckList {
   _id: string
   cardId: string
+  boardId: string
   title: string
   listItemOrderIds: string[]
   checkItems: ICheckItem[]
@@ -43,6 +74,7 @@ export interface ICheckList {
 export interface ICheckItem {
   _id: string
   checkListId: string
+  boardId: string
   title?: string
   state: string
   FE_PlaceholderCheckList?: boolean

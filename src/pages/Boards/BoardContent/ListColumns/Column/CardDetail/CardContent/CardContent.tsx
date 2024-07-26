@@ -31,7 +31,7 @@ import {
   moveCheckList,
   updateCheckList
 } from '~/redux/cardSlice'
-import { MouseSensor } from '~/customLib/DndKitSensors'
+import { MouseSensor } from '~/customLib/DndKitSensorsCard'
 
 const ACTIVATE_DRAG_ITEM_TYPE = {
   CHECK_LIST: 'ACTIVATE_DRAG_ITEM_TYPE_CHECK_LIST',

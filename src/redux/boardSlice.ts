@@ -4,7 +4,7 @@
 
 import { createSlice, createAsyncThunk, AsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { isEmpty } from 'lodash'
-import { IBoard, ICard, IColumn, IError } from '~/apis/type'
+import { IAttachment, IBoard, ICard, IColumn, IError, ILabel } from '~/apis/type'
 import instance from '~/axiosConfig'
 import { generatePlaceholder } from '~/utils/formatters'
 import { mapOrder } from '~/utils/sort'
@@ -192,7 +192,45 @@ const boardSlice = createSlice({
         const cardIdx = state.board.columns[columnIdx].cards.findIndex(
           (card) => card._id === action.payload.cardId
         )
-        state.board.columns[columnIdx].cards[cardIdx].title = action.payload.title
+        if (action.payload.title)
+          state.board.columns[columnIdx].cards[cardIdx].title = action.payload.title
+        if (action.payload.cover)
+          state.board.columns[columnIdx].cards[cardIdx].cover = action.payload.cover
+        if (action.payload.attachment) {
+          const attachment = action.payload.attachment as IAttachment
+          state.board.columns[columnIdx].cards[cardIdx].attachments?.push(attachment as never)
+        }
+        if (action.payload.deleteAttachmentId) {
+          state.board.columns[columnIdx].cards[cardIdx].attachments = state.board.columns[
+            columnIdx
+          ].cards[cardIdx].attachments?.filter(
+            (attachment) => attachment._id !== action.payload.deleteAttachmentId
+          )
+        }
+      }
+    },
+    updateBoardState: (state, action: PayloadAction<any>) => {
+      if (action.payload.labels && state.board) state.board.labels = action.payload.labels
+      if (action.payload.label && state.board) {
+        const labelIdx = state.board.labels.findIndex(
+          (label) => label._id === action.payload.label._id
+        )
+        if (action.payload.cardIdRemove)
+          state.board.labels[labelIdx].listCard = state.board.labels[labelIdx].listCard.filter(
+            (card) => card !== action.payload.cardIdRemove
+          )
+        if (action.payload.cardIdAdd)
+          state.board.labels[labelIdx].listCard.push(action.payload.cardIdAdd)
+        if (action.payload.title) state.board.labels[labelIdx].title = action.payload.title
+        if (action.payload.color) state.board.labels[labelIdx].color = action.payload.color
+        if (action.payload.deleteId)
+          state.board.labels = state.board.labels.filter(
+            (label) => label._id !== action.payload.deleteId
+          )
+      }
+      if (action.payload.addLabel && state.board) {
+        const newLabel = action.payload.addLabel as ILabel
+        state.board.labels.push(newLabel as never)
       }
     }
   },
@@ -260,6 +298,9 @@ const boardSlice = createSlice({
           if (action.meta.arg.dataUpdate.title)
             state.board.columns[columnIdx as number].cards[cardIdx].title =
               action.meta.arg.dataUpdate.title
+          if (action.meta.arg.dataUpdate.cover)
+            state.board.columns[columnIdx as number].cards[cardIdx].cover =
+              action.meta.arg.dataUpdate.cover
         }
       })
       .addCase(deleteColumn.pending, (state) => {
@@ -334,7 +375,8 @@ export const {
   updateMoveOneState,
   updateMoveColumnState,
   updateColumnState,
-  updateCardState
+  updateCardState,
+  updateBoardState
 } = boardSlice.actions
 
 const boardReducer = boardSlice.reducer

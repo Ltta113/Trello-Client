@@ -11,6 +11,7 @@ export const generatePlaceholder = (column: IColumn): ICard => {
     boardId: column.boardId,
     columnId: column._id,
     checkLists: [],
+    labels: [],
     FE_PlaceholderCard: true
   }
 }
@@ -18,6 +19,7 @@ export const generatePlaceholderCI = (checkList: ICheckList): ICheckItem => {
   return {
     _id: `${checkList._id}-placeholder-checklist`,
     checkListId: checkList._id,
+    boardId: checkList.boardId,
     FE_PlaceholderCheckList: true,
     state: 'incomplete'
   }

@@ -6,7 +6,7 @@ import { RootState, useAppDispatch } from '~/redux/store'
 import _id from '../Users/_id'
 import { useEffect } from 'react'
 import { getCurrent } from '~/redux/userSlice'
-import Board from '../Boards/_id'
+import AppBar from '~/components/AppBar/AppBar'
 
 function Main() {
   const user = useSelector((state: RootState) => state.user.user)
@@ -24,7 +24,7 @@ function Main() {
       }}
     >
       {!user && <_id />}
-      {user && <Board />}
+      {user && <AppBar />}
     </Container>
   )
 }

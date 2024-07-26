@@ -6,9 +6,13 @@ import checkListReducer from './checkListSlice'
 import checkItemReducer from './checktemSlice'
 import commentReducer from './commentSlide'
 import userReducer from './userSlice'
+import labelReducer from './labelSlice'
+import attachmentReducer from './attachmentSlice'
 
 export const store = configureStore({
   reducer: {
+    attachment: attachmentReducer,
+    label: labelReducer,
     user: userReducer,
     checkItem: checkItemReducer,
     board: boardReducer,

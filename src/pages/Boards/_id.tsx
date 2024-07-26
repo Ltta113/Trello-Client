@@ -10,40 +10,54 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Box from '@mui/material/Box'
 import { Typography } from '@mui/material'
 import { toast } from 'react-toastify'
+import { useParams } from 'react-router-dom'
 
 function Board() {
+  const { boardId } = useParams<{ boardId: string }>() // Lấy boardId từ useParams
   const board = useSelector((state: RootState) => state.board.board)
   const error = useSelector((state: RootState) => state.board.error)
   const dispatch = useAppDispatch()
-  // const [board, setBoard] = useState<IBoard>()
 
   useEffect(() => {
-    const boardId = '6684ee3f8a372b92867eb453'
-    const promise = dispatch(fetchBoardDetails(boardId))
-    return () => {
-      promise.abort()
+    if (boardId) {
+      // Kiểm tra nếu boardId có tồn tại
+      const promise = dispatch(fetchBoardDetails(boardId))
+      return () => {
+        promise.abort() // Huỷ bỏ request khi component unmount
+      }
     }
-  }, [dispatch])
+  }, [dispatch, boardId])
+
   useEffect(() => {
     if (error) {
       toast.error(`Error: ${error.statusCode} - ${error.message}`)
     }
   }, [error])
+
   if (!board) {
     return (
-      <Box
+      <Container
+        disableGutters
+        maxWidth={false}
         sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 2,
-          width: '100vw',
           height: '100vh'
         }}
       >
-        <CircularProgress />
-        <Typography>Loading Board...</Typography>
-      </Box>
+        <AppBar />
+        <Box
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 2,
+            width: '100vw',
+            height: '100vh'
+          }}
+        >
+          <CircularProgress />
+          <Typography>Loading Board...</Typography>
+        </Box>
+      </Container>
     )
   }
 

@@ -4,7 +4,7 @@
 
 import { createSlice, AsyncThunk, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
 import { isEmpty } from 'lodash'
-import { ICard, ICheckItem, ICheckList, IComment, IError } from '~/apis/type'
+import { IAttachment, ICard, ICheckItem, ICheckList, IComment, IError, ILabel } from '~/apis/type'
 import instance from '~/axiosConfig'
 import { generatePlaceholderCI } from '~/utils/formatters'
 import { mapOrder } from '~/utils/sort'
@@ -79,6 +79,17 @@ export const createNewComment: AsyncThunk<IComment, any, any> = createAsyncThunk
     }
   }
 )
+export const createNewAttachment: AsyncThunk<IAttachment, any, any> = createAsyncThunk<IAttachment, any>(
+  'attachment/createAttachment',
+  async (body, thunkAPI) => {
+    try {
+      const response = await instance.post<IAttachment>('/v1/attachments', body)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data as IError)
+    }
+  }
+)
 export const updateCheckItemAPI: AsyncThunk<ICheckItem, any, any> = createAsyncThunk<
   ICheckItem,
   any
@@ -146,6 +157,17 @@ export const deleteCheckListAPI: AsyncThunk<string, any, any> = createAsyncThunk
     }
   }
 )
+export const deleteAttachmentAPI: AsyncThunk<string, any, any> = createAsyncThunk<string, any>(
+  'cards/deleteAttachment',
+  async (attachmentId, thunkAPI) => {
+    try {
+      const response = await instance.delete<string>(`/v1/attachments/${attachmentId}`)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data as IError)
+    }
+  }
+)
 export const deleteCommentAPI: AsyncThunk<string, any, any> = createAsyncThunk<string, any>(
   'cards/deleteComment',
   async (commentId, thunkAPI) => {
@@ -189,6 +211,12 @@ const cardSlice = createSlice({
         }
       }
     },
+    updateCoverState: (state, action: PayloadAction<any>) => {
+      const { card } = state
+      if (action.payload.cover && card) {
+        card.cover = action.payload.cover
+      }
+    },
     updateCheckListState: (state, action: PayloadAction<any>) => {
       if (state.card && state.card.checkLists) {
         const checkListIdx = state.card.checkLists.findIndex(
@@ -224,6 +252,11 @@ const cardSlice = createSlice({
         if (commentIdx !== -1) {
           state.card.comments[commentIdx].description = action.payload.description
         }
+      }
+    },
+    updateLabelState: (state, action: PayloadAction<ILabel[]>) => {
+      if (state.card && state.card.labels) {
+        state.card.labels = action.payload
       }
     },
     moveCheckItemToDiffState: (state, action: PayloadAction<any>) => {
@@ -315,6 +348,13 @@ const cardSlice = createSlice({
         state.loading = false
         state.card?.comments?.push(action.payload as never)
       })
+      .addCase(createNewAttachment.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(createNewAttachment.fulfilled, (state, action) => {
+        state.loading = false
+        state.card?.attachments?.push(action.payload as never)
+      })
       .addCase(createNewCheckItem.pending, (state) => {
         state.loading = true
       })
@@ -405,6 +445,16 @@ const cardSlice = createSlice({
           )
         }
       })
+      .addCase(deleteAttachmentAPI.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(deleteAttachmentAPI.fulfilled, (state, action) => {
+        state.loading = false
+        state.success = true
+        if (state.card?.attachments) {
+          state.card.attachments = state.card?.attachments.filter((c) => c._id !== action.meta.arg)
+        }
+      })
       .addCase(deleteCommentAPI.pending, (state) => {
         state.loading = true
       })
@@ -438,10 +488,12 @@ export const {
   closeCardDetail,
   updateDesc,
   updateState,
+  updateCoverState,
   moveCheckItemToDiffState,
   updateCheckListState,
   updateCheckItemState,
-  updateCommentState
+  updateCommentState,
+  updateLabelState
 } = cardSlice.actions
 
 const cardReducer = cardSlice.reducer

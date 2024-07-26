@@ -70,7 +70,7 @@ function CheckList({ checkList, ...props }: CheckListProps) {
   }
   const [title, setTitle] = useState<string | undefined>('')
   const createCheckItem = () => {
-    dispatch(createNewCheckItem({ checkListId: checkList._id, title: title }))
+    dispatch(createNewCheckItem({ checkListId: checkList._id, title: title, boardId: checkList.boardId }))
     dispatch(openAddCheckItem({ checkListId: checkList._id }))
   }
   useEffect(() => {
@@ -273,7 +273,7 @@ function CheckList({ checkList, ...props }: CheckListProps) {
             <ListItem checkItems={orderedCheckItem} progress={progress} setProgress={setProgress} />
           )}
           <Box sx={{ display: 'flex', gap: 1, mt: -1 }}>
-            <Box sx={{ width: '7%' }}></Box>
+            <Box sx={{ width: '6%' }}></Box>
             {!openAddForm && (
               <Button variant="contained" sx={{ mb: 0, fontWeight: 'bold' }} onClick={openAddCI}>
                 Thêm một mục
