@@ -2,7 +2,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { createSlice, AsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, AsyncThunk, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit'
+import { IAttachment, IError } from '~/apis/type'
+import instance from '~/axiosConfig'
 
 type GenericAsyncThunk = AsyncThunk<unknown, unknown, any>
 
@@ -11,6 +13,7 @@ type RejectedAction = ReturnType<GenericAsyncThunk['rejected']>
 type FulfilledAction = ReturnType<GenericAsyncThunk['fulfilled']>
 
 export interface attachmentState {
+  attachments: IAttachment[] | []
   openEdit: boolean
   attachmentIdUpdate: string
   openDelete: boolean
@@ -22,6 +25,7 @@ export interface attachmentState {
 }
 
 const initialState: attachmentState = {
+  attachments: [],
   openEdit: false,
   attachmentIdUpdate: '',
   openDelete: false,
@@ -31,6 +35,18 @@ const initialState: attachmentState = {
   message: '',
   currentRequestId: undefined
 }
+
+export const fetchAttachmentByCardIdAPI: AsyncThunk<IAttachment[], string, any> = createAsyncThunk<IAttachment[], string>(
+  'attachments/fetchAttachmentByCardId',
+  async (cardId, thunkAPI) => {
+    try {
+      const response = await instance.get<IAttachment[]>(`/v1/attachments/all/${cardId}`)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data as IError)
+    }
+  }
+)
 
 const attachmentSlice = createSlice({
   name: 'attachment',
@@ -49,6 +65,14 @@ const attachmentSlice = createSlice({
   },
   extraReducers(builder) {
     builder
+      .addCase(fetchAttachmentByCardIdAPI.pending, (state) => {
+        state.attachments = []
+        state.loading = true
+      })
+      .addCase(fetchAttachmentByCardIdAPI.fulfilled, (state, action) => {
+        state.attachments = action.payload
+        state.loading = false
+      })
       .addMatcher<PendingAction>(
         (action) => action.type.endsWith('/pending'),
         (state, action) => {

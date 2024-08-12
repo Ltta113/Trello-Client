@@ -31,7 +31,6 @@ import {
   moveCardToDiffColumnAPI,
   updateBoardDetails,
   updateColumnDetails,
-  updateMoveColumnState,
   updateMoveDiffState,
   updateMoveOneState
 } from '~/redux/boardSlice'
@@ -282,13 +281,6 @@ function BoardContent({ board }: BoardBarProps) {
         const newIndex = orderedColumns.findIndex((c) => c._id === over?.id)
         const dndOrderedColumns = arrayMove<IColumn>(orderedColumns, oldIndex, newIndex)
         const dndOrderedColumnsIds = dndOrderedColumns.map((c) => c._id)
-
-        dispatch(
-          updateMoveColumnState({
-            listColumn: dndOrderedColumns,
-            listColumnIds: dndOrderedColumnsIds
-          })
-        )
 
         dispatch(
           updateBoardDetails({

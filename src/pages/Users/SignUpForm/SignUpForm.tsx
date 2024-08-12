@@ -1,5 +1,5 @@
-// src/components/LoginForm.tsx
-import { FormEvent, useEffect } from 'react'
+/* eslint-disable react/no-unescaped-entities */
+import { FormEvent, useEffect, useState } from 'react'
 import TextField from '@mui/material/TextField'
 import Button from '@mui/material/Button'
 import Grid from '@mui/material/Grid'
@@ -7,7 +7,7 @@ import Paper from '@mui/material/Paper'
 import Box from '@mui/material/Box'
 import SvgIcon from '@mui/material/SvgIcon'
 import { RootState, useAppDispatch } from '~/redux/store'
-import { loginUser } from '~/redux/userSlice'
+import { signUpUser } from '~/redux/userSlice'
 import TrelloLogo from '~/assets/trello.svg?react'
 import GoogleLogo from '~/assets/google.svg?react'
 import MicrosoftLogo from '~/assets/microsoft.svg?react'
@@ -23,6 +23,7 @@ import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Container from '@mui/material/Container'
+import CircularProgress from '@mui/material/CircularProgress' // Thêm dòng này
 
 const buttons = [
   <Button key="one">
@@ -43,26 +44,55 @@ const buttons = [
   </Button>
 ]
 
-const LoginForm = () => {
+const SignUpForm = () => {
   const dispatch = useAppDispatch()
-  const { error, status } = useSelector((state: RootState) => state.user)
+  const { error, status, loading } = useSelector((state: RootState) => state.user)
+  const [isLoading, setIsLoading] = useState<boolean>(false)
   const navigate = useNavigate()
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     // Add your login logic here
     const data = new FormData(e.currentTarget)
-    dispatch(loginUser({ email: data.get('email'), password: data.get('password') }))
+    dispatch(
+      signUpUser({
+        email: data.get('email'),
+        password: data.get('password'),
+        firstname: (data.get('firstname') as string).trim(),
+        lastname: (data.get('lastname') as string).trim()
+      })
+    )
   }
 
   useEffect(() => {
-    if (status === 'login') {
-      toast.success('Login success')
-      navigate('/')
+    if (status !== null) {
+      toast.success(status)
+      navigate('/login')
     } else if (error) {
       toast.error(`Error: ${error.statusCode} - ${error.message}`)
     }
   }, [error, navigate, status])
+
+  useEffect(() => {
+    if (loading === 'register') setIsLoading(true)
+    else setIsLoading(false)
+  }, [loading])
+
+  if (isLoading) {
+    return (
+      <Container
+        sx={{
+          marginTop: '50px',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100vh'
+        }}
+      >
+        <CircularProgress />
+      </Container>
+    )
+  }
 
   return (
     <Container sx={{ marginTop: '50px' }}>
@@ -87,7 +117,7 @@ const LoginForm = () => {
               </Box>
             </Box>
             <Box sx={{ fontWeight: 'bold', fontSize: 14, textAlign: 'center' }}>
-              Log in to continue
+              Sign up to continue
             </Box>
             <Box
               component="form"
@@ -97,13 +127,39 @@ const LoginForm = () => {
                 '& .MuiTextField-root': { m: 'none' }
               }}
             >
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  size="small"
+                  id="firstname"
+                  placeholder="First name"
+                  name="firstname"
+                />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  size="small"
+                  id="lastname"
+                  placeholder="Last name"
+                  name="lastname"
+                />
+              </Box>
+              {error?.statusCode === 409 && (
+                <Box sx={{ fontSize: 11, color: grey[700] }}>
+                  It looks like you've already got an account associated with this email. Log in
+                  instead or reset your password if you've forgotten it
+                </Box>
+              )}
               <TextField
                 margin="normal"
                 required
                 fullWidth
                 size="small"
                 id="email"
-                label="Enter your email"
+                placeholder="Enter your email"
                 name="email"
                 autoComplete="email"
                 autoFocus
@@ -114,13 +170,24 @@ const LoginForm = () => {
                 fullWidth
                 size="small"
                 name="password"
-                label="Password"
+                placeholder="Password"
                 type="password"
                 id="password"
                 autoComplete="current-password"
               />
+              <Box sx={{ fontSize: 11, color: grey[700], pb: 2 }}>
+                By signing up, I accept the Atlassian{' '}
+                <Link href="#" underline="hover">
+                  Cloud Terms of Service
+                </Link>{' '}
+                and acknowledge the{' '}
+                <Link href="#" underline="hover">
+                  Privacy Policy
+                </Link>{' '}
+                .
+              </Box>
               <Button type="submit" fullWidth variant="contained">
-                Sign In
+                Sign Up
               </Button>
             </Box>
             <Box
@@ -162,14 +229,8 @@ const LoginForm = () => {
                 color: 'blue'
               }}
             >
-              <Link href="#" underline="hover" onClick={() => navigate('/forgotPassword')}>
-                Cannot log in?
-              </Link>
-              <Typography variant="body1" sx={{ my: 'auto', color: 'gray' }}>
-                •
-              </Typography>
-              <Link href="#" underline="hover" onClick={() => navigate('/signup')}>
-                Create an account
+              <Link href="#" underline="hover" onClick={() => navigate('/login')}>
+                Already have an Atlassian account? Log in
               </Link>
             </Box>
             <Divider variant="middle" />
@@ -245,4 +306,4 @@ const LoginForm = () => {
   )
 }
 
-export default LoginForm
+export default SignUpForm

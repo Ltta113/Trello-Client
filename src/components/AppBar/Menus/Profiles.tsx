@@ -9,11 +9,16 @@ import IconButton from '@mui/material/IconButton'
 import PersonAdd from '@mui/icons-material/PersonAdd'
 import Settings from '@mui/icons-material/Settings'
 import Logout from '@mui/icons-material/Logout'
-import { useAppDispatch } from '~/redux/store'
+import { RootState, useAppDispatch } from '~/redux/store'
 import { logoutUser } from '~/redux/userSlice'
+import { useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'react-toastify'
 
 export default function Profiles() {
   const dispatch = useAppDispatch()
+  const { error } = useSelector((state: RootState) => state.user)
+  const navigate = useNavigate()
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
   const open = Boolean(anchorEl)
@@ -23,6 +28,16 @@ export default function Profiles() {
   const handleClose = () => {
     setAnchorEl(null)
   }
+  const handleLogout = async () => {
+    await dispatch(logoutUser())
+    navigate('/login')
+  }
+
+  React.useEffect(() => {
+    if (error) {
+      toast.error(`Error: ${error.statusCode} - ${error.message}`)
+    }
+  }, [error])
 
   return (
     <div>
@@ -71,7 +86,7 @@ export default function Profiles() {
           </ListItemIcon>
           Settings
         </MenuItem>
-        <MenuItem onClick={() => dispatch(logoutUser())}>
+        <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <Logout fontSize="small" />
           </ListItemIcon>

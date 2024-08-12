@@ -164,20 +164,6 @@ const boardSlice = createSlice({
           state.board.columns[columnIndex].cards = action.payload.listCardSorted
         }
     },
-    updateMoveColumnState: (state, action: PayloadAction<any>) => {
-      if (state.board && state.board.columns) {
-        state.board.columns = action.payload.listColumn
-        state.board.columnOrderIds = action.payload.listColumnIds
-        state.board?.columns.forEach((column) => {
-          if (isEmpty(column.cards)) {
-            column.cards = [generatePlaceholder(column)]
-            column.cardOrderIds = [generatePlaceholder(column)._id]
-          } else {
-            // column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
-          }
-        })
-      }
-    },
     updateColumnState: (state, action: PayloadAction<any>) => {
       if (state.board && state.board.columns) {
         const columnIdx = state.board.columns.findIndex((c) => c._id === action.payload.columnId)
@@ -206,6 +192,13 @@ const boardSlice = createSlice({
           ].cards[cardIdx].attachments?.filter(
             (attachment) => attachment._id !== action.payload.deleteAttachmentId
           )
+          if (
+            state.board.columns[columnIdx].cards[cardIdx].cover &&
+            state.board.columns[columnIdx].cards[cardIdx].cover.idAttachment ===
+              action.payload.deleteAttachmentId
+          ) {
+            state.board.columns[columnIdx].cards[cardIdx].cover.idAttachment = null
+          }
         }
       }
     },
@@ -231,6 +224,10 @@ const boardSlice = createSlice({
       if (action.payload.addLabel && state.board) {
         const newLabel = action.payload.addLabel as ILabel
         state.board.labels.push(newLabel as never)
+      }
+      if (state.board) {
+        if (action.payload.boardTitle) state.board.title = action.payload.boardTitle
+        if (action.payload.type) state.board.type = action.payload.type
       }
     }
   },
@@ -266,18 +263,22 @@ const boardSlice = createSlice({
         state.loading = true
       })
       .addCase(updateBoardDetails.fulfilled, (state, action) => {
-        state.board = action.payload
         state.loading = false
-        if (state.board.columns && state.board.columnOrderIds)
-          state.board.columns = mapOrder(state.board?.columns, state.board?.columnOrderIds, '_id')
-        state.board?.columns.forEach((column) => {
-          if (isEmpty(column.cards)) {
-            column.cards = [generatePlaceholder(column)]
-            column.cardOrderIds = [generatePlaceholder(column)._id]
-          } else {
-            column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
+        if (state.board) {
+          const dataUpdate = action.meta.arg.dataUpdate
+          if (state.board.columns && dataUpdate.columnOrderIds) {
+            state.board.columnOrderIds = dataUpdate.columnOrderIds as string[]
+            state.board.columns = mapOrder(state.board?.columns, state.board.columnOrderIds, '_id')
           }
-        })
+          state.board?.columns.forEach((column) => {
+            if (isEmpty(column.cards)) {
+              column.cards = [generatePlaceholder(column)]
+              column.cardOrderIds = [generatePlaceholder(column)._id]
+            } else {
+              column.cards = mapOrder(column.cards, column.cardOrderIds, '_id')
+            }
+          })
+        }
       })
       .addCase(updateColumnDetails.pending, (state) => {
         state.loading = true
@@ -373,7 +374,6 @@ const boardSlice = createSlice({
 export const {
   updateMoveDiffState,
   updateMoveOneState,
-  updateMoveColumnState,
   updateColumnState,
   updateCardState,
   updateBoardState

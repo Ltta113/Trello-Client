@@ -79,17 +79,17 @@ export const createNewComment: AsyncThunk<IComment, any, any> = createAsyncThunk
     }
   }
 )
-export const createNewAttachment: AsyncThunk<IAttachment, any, any> = createAsyncThunk<IAttachment, any>(
-  'attachment/createAttachment',
-  async (body, thunkAPI) => {
-    try {
-      const response = await instance.post<IAttachment>('/v1/attachments', body)
-      return response.data
-    } catch (error: any) {
-      return thunkAPI.rejectWithValue(error.response.data as IError)
-    }
+export const createNewAttachment: AsyncThunk<IAttachment, any, any> = createAsyncThunk<
+  IAttachment,
+  any
+>('attachment/createAttachment', async (body, thunkAPI) => {
+  try {
+    const response = await instance.post<IAttachment>('/v1/attachments', body)
+    return response.data
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(error.response.data as IError)
   }
-)
+})
 export const updateCheckItemAPI: AsyncThunk<ICheckItem, any, any> = createAsyncThunk<
   ICheckItem,
   any
@@ -112,6 +112,17 @@ export const updateCheckList: AsyncThunk<ICheckList, any, any> = createAsyncThun
     }
   }
 )
+export const updateAttachmentAPI: AsyncThunk<IAttachment, any, any> = createAsyncThunk<
+  IAttachment,
+  any
+>('attachments/updateAttachment', async ({ attachmentId, dataUpdate }, thunkAPI) => {
+  try {
+    const response = await instance.put<IAttachment>(`/v1/attachments/${attachmentId}`, dataUpdate)
+    return response.data
+  } catch (error: any) {
+    return thunkAPI.rejectWithValue(error.response.data as IError)
+  }
+})
 export const updateCommentAPI: AsyncThunk<IComment, any, any> = createAsyncThunk<IComment, any>(
   'comments/updateCommentAPI',
   async ({ commentId, dataUpdate }, thunkAPI) => {
@@ -404,6 +415,19 @@ const cardSlice = createSlice({
       })
       .addCase(updateCommentAPI.fulfilled, (state, _action) => {
         state.loading = false
+      })
+      .addCase(updateAttachmentAPI.pending, (state) => {
+        state.loading = true
+      })
+      .addCase(updateAttachmentAPI.fulfilled, (state, action) => {
+        state.loading = false
+        if (state.card) {
+          const attachmentIdx = state.card.attachments?.findIndex(
+            (attachment) => attachment._id === action.meta.arg.attachmentId
+          )
+          if (state.card.attachments)
+            state.card.attachments[attachmentIdx as number].name = action.meta.arg.dataUpdate.name
+        }
       })
       .addCase(moveCheckList.pending, (state) => {
         state.loading = true

@@ -4,7 +4,7 @@ export interface IBoard {
   title: string
   description: string,
   slug: string,
-  type: 'public' | 'private'
+  type: 'public' | 'private' | 'workspace'
   ownerIds: string[]
   memberIds?: string[]
   columnOrderIds?: string[]

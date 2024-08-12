@@ -10,13 +10,14 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Box from '@mui/material/Box'
 import { Typography } from '@mui/material'
 import { toast } from 'react-toastify'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 
 function Board() {
   const { boardId } = useParams<{ boardId: string }>() // Lấy boardId từ useParams
   const board = useSelector((state: RootState) => state.board.board)
   const error = useSelector((state: RootState) => state.board.error)
   const dispatch = useAppDispatch()
+  const navigate = useNavigate()
 
   useEffect(() => {
     if (boardId) {
@@ -33,6 +34,17 @@ function Board() {
       toast.error(`Error: ${error.statusCode} - ${error.message}`)
     }
   }, [error])
+
+  useEffect(() => {
+    if (error?.statusCode === 403) {
+      toast.error(`Error: ${error.statusCode} - ${error.message}`)
+      navigate('/error', { state: { error } })
+    }
+    else if (error) {
+      toast.error(`Error: ${error.statusCode} - ${error.message}`)
+      navigate('/login')
+    }
+  }, [error, navigate])
 
   if (!board) {
     return (

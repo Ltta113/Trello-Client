@@ -3,10 +3,10 @@ import Container from '@mui/material/Container'
 // import HomeContent from './HomeContent/HomeContent'
 import { useSelector } from 'react-redux'
 import { RootState, useAppDispatch } from '~/redux/store'
-import _id from '../Users/_id'
 import { useEffect } from 'react'
 import { getCurrent } from '~/redux/userSlice'
 import AppBar from '~/components/AppBar/AppBar'
+import LoginForm from '../Users/LoginForm/LoginForm'
 
 function Main() {
   const user = useSelector((state: RootState) => state.user.user)
@@ -23,7 +23,7 @@ function Main() {
         height: '100vh'
       }}
     >
-      {!user && <_id />}
+      {!user && <LoginForm />}
       {user && <AppBar />}
     </Container>
   )
