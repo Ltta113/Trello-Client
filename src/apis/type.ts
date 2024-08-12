@@ -97,5 +97,9 @@ export interface IUser {
   firstname: string,
   lastname: string,
   email: string,
-  isBlocked: boolean
+  isBlocked: boolean,
+  avatar?: {
+    url: string,
+    contentType: string
+  }
 }

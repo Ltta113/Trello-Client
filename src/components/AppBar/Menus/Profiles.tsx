@@ -2,22 +2,22 @@ import * as React from 'react'
 import Menu from '@mui/material/Menu'
 import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
-import ListItemIcon from '@mui/material/ListItemIcon'
 import Avatar from '@mui/material/Avatar'
 import Tooltip from '@mui/material/Tooltip'
 import IconButton from '@mui/material/IconButton'
-import PersonAdd from '@mui/icons-material/PersonAdd'
-import Settings from '@mui/icons-material/Settings'
-import Logout from '@mui/icons-material/Logout'
 import { RootState, useAppDispatch } from '~/redux/store'
 import { logoutUser } from '~/redux/userSlice'
 import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
+import Box from '@mui/material/Box'
+import LaunchIcon from '@mui/icons-material/Launch'
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 
 export default function Profiles() {
   const dispatch = useAppDispatch()
-  const { error } = useSelector((state: RootState) => state.user)
+  const { error, user } = useSelector((state: RootState) => state.user)
   const navigate = useNavigate()
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null)
@@ -40,8 +40,8 @@ export default function Profiles() {
   }, [error])
 
   return (
-    <div>
-      <Tooltip title="Account settings">
+    <Box>
+      <Tooltip title="Tài khoản">
         <IconButton
           onClick={handleClick}
           size="small"
@@ -52,13 +52,19 @@ export default function Profiles() {
         >
           <Avatar
             sx={{ width: 36, height: 36 }}
-            alt="None"
-            src="https://lh3.googleusercontent.com/a/ACg8ocJZV6LUuzWXWw0KICxhz3J19PlxTScBiMdfhbod9vINqQ=s96-c"
+            alt={`${user?.firstname} ${user?.lastname}`}
+            src={user?.avatar?.url}
           />
         </IconButton>
       </Tooltip>
       <Menu
-        sx={{ color: 'white' }}
+        sx={{
+          color: 'white',
+          '.MuiMenuItem-root': {
+            fontSize: '14px',
+            p: '8px 0px'
+          }
+        }}
         id="basic-menu-profiles"
         anchorEl={anchorEl}
         open={open}
@@ -67,32 +73,48 @@ export default function Profiles() {
           'aria-labelledby': 'basic-button-profiles'
         }}
       >
-        <MenuItem>
-          <Avatar sx={{ width: 28, height: 28, mr: 2 }} /> Profile
-        </MenuItem>
-        <MenuItem>
-          <Avatar sx={{ width: 28, height: 28, mr: 2 }} /> My account
-        </MenuItem>
-        <Divider />
-        <MenuItem>
-          <ListItemIcon>
-            <PersonAdd fontSize="small" />
-          </ListItemIcon>
-          Add another account
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon>
-            <Settings fontSize="small" />
-          </ListItemIcon>
-          Settings
-        </MenuItem>
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <Logout fontSize="small" />
-          </ListItemIcon>
-          Logout
-        </MenuItem>
+        <Box sx={{ width: '315px', height: 'auto', p: '12px' }}>
+          <Box>
+            <Box sx={{ fontSize: 13, fontWeight: 'bold', pb: 1 }}>TÀI KHOẢN</Box>
+            <Box sx={{ display: 'flex', justifyContent: 'start', gap: 1 }}>
+              <Avatar alt={`${user?.firstname} ${user?.lastname}`} src={user?.avatar?.url} />
+              <Box>
+                <Box>{`${user?.firstname} ${user?.lastname}`}</Box>
+                <Box sx={{ fontSize: 13 }}>{user?.email}</Box>
+              </Box>
+            </Box>
+            <MenuItem sx={{ p: 'none' }}>Chuyển đổi tài khoản</MenuItem>
+            <MenuItem sx={{ justifyContent: 'space-between', display: 'flex' }}>
+              Quản lý tài khoản <LaunchIcon sx={{ pb: 1 }} />{' '}
+            </MenuItem>
+          </Box>
+          <Divider />
+          <Box>
+            <Box sx={{ fontSize: 13, fontWeight: 'bold', pb: 1, pt: 2 }}>TRELLO</Box>
+            <MenuItem>Hồ sơ và cài đặt</MenuItem>
+            <MenuItem>Hoạt động</MenuItem>
+            <MenuItem>Thẻ</MenuItem>
+            <MenuItem>Cài đặt</MenuItem>
+            <MenuItem sx={{ justifyContent: 'space-between', display: 'flex' }}>
+              Chủ đề <KeyboardArrowDownIcon />{' '}
+            </MenuItem>
+          </Box>
+          <Divider />
+          <Box>
+            <MenuItem>
+              <PeopleAltOutlinedIcon sx={{ p: '3px' }} /> Tạo không gian làm việc
+            </MenuItem>
+          </Box>
+          <Divider />
+          <Divider />
+          <Box>
+            <MenuItem>Trợ giúp</MenuItem>
+            <MenuItem>Phím tắt</MenuItem>
+          </Box>
+          <Divider />
+          <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
+        </Box>
       </Menu>
-    </div>
+    </Box>
   )
 }
