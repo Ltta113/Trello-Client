@@ -1,5 +1,4 @@
 import Menu from '@mui/material/Menu'
-import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
 import Avatar from '@mui/material/Avatar'
 import Tooltip from '@mui/material/Tooltip'
@@ -10,12 +9,9 @@ import { useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'react-toastify'
 import Box from '@mui/material/Box'
-import LaunchIcon from '@mui/icons-material/Launch'
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined'
 import { useEffect, useState, MouseEvent } from 'react'
 
-export default function Profiles() {
+export default function ProfilesEdit() {
   const dispatch = useAppDispatch()
   const { error, user } = useSelector((state: RootState) => state.user)
   const navigate = useNavigate()
@@ -84,38 +80,9 @@ export default function Profiles() {
               </Box>
             </Box>
             <MenuItem sx={{ p: 'none' }}>Chuyển đổi tài khoản</MenuItem>
-            <MenuItem
-              sx={{ justifyContent: 'space-between', display: 'flex' }}
-              onClick={() => navigate(`/profile/${user?._id}`)}
-            >
-              Quản lý tài khoản <LaunchIcon sx={{ pb: 1 }} />{' '}
-            </MenuItem>
+
+            <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
           </Box>
-          <Divider />
-          <Box>
-            <Box sx={{ fontSize: 13, fontWeight: 'bold', pb: 1, pt: 2 }}>TRELLO</Box>
-            <MenuItem>Hồ sơ và cài đặt</MenuItem>
-            <MenuItem>Hoạt động</MenuItem>
-            <MenuItem>Thẻ</MenuItem>
-            <MenuItem>Cài đặt</MenuItem>
-            <MenuItem sx={{ justifyContent: 'space-between', display: 'flex' }}>
-              Chủ đề <KeyboardArrowDownIcon />{' '}
-            </MenuItem>
-          </Box>
-          <Divider />
-          <Box>
-            <MenuItem>
-              <PeopleAltOutlinedIcon sx={{ p: '3px' }} /> Tạo không gian làm việc
-            </MenuItem>
-          </Box>
-          <Divider />
-          <Divider />
-          <Box>
-            <MenuItem>Trợ giúp</MenuItem>
-            <MenuItem>Phím tắt</MenuItem>
-          </Box>
-          <Divider />
-          <MenuItem onClick={handleLogout}>Đăng xuất</MenuItem>
         </Box>
       </Menu>
     </Box>

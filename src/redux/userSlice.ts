@@ -3,8 +3,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { createSlice, AsyncThunk, createAsyncThunk } from '@reduxjs/toolkit'
+import axios from 'axios'
 import { IError, IUser } from '~/apis/type'
 import instance from '~/axiosConfig'
+import { API_ROOT } from '~/utils/constants'
 
 type GenericAsyncThunk = AsyncThunk<unknown, unknown, any>
 
@@ -16,9 +18,13 @@ export interface checkItemState {
   user: IUser | undefined
   loading: string | null
   status: string | null
-  error: IError | undefined,
+  error: IError | undefined
   currentRequestId: undefined | string
 }
+
+const instance_2 = axios.create({
+  baseURL: API_ROOT
+})
 
 const initialState: checkItemState = {
   user: undefined,
@@ -32,7 +38,7 @@ export const loginUser: AsyncThunk<any, any, any> = createAsyncThunk<any, any>(
   'user/Login',
   async (body, thunkAPI) => {
     try {
-      const response = await instance.post<any>('/v1/users/login', body)
+      const response = await instance_2.post<any>('/v1/users/login', body)
       localStorage.setItem('access', JSON.stringify(response.data.accessToken))
       return response.data
     } catch (error: any) {
@@ -44,14 +50,14 @@ export const signUpUser: AsyncThunk<any, any, any> = createAsyncThunk<any, any>(
   'user/SignUp',
   async (body, thunkAPI) => {
     try {
-      const response = await instance.post<any>('/v1/users/', body)
+      const response = await instance_2.post<any>('/v1/users/', body)
       return response.data
     } catch (error: any) {
       return thunkAPI.rejectWithValue(error.response.data)
     }
   }
 )
-export const logoutUser = createAsyncThunk<any, void, any>('user/Logouy', async (_, thunkAPI) => {
+export const logoutUser = createAsyncThunk<any, void, any>('user/Logout', async (_, thunkAPI) => {
   try {
     const response = await instance.get<any>('/v1/users/logout')
     return response.data
@@ -92,7 +98,49 @@ export const resetPassword: AsyncThunk<any, any, any> = createAsyncThunk<any, an
     }
   }
 )
-
+export const uploadAvatarAPI: AsyncThunk<IUser, any, any> = createAsyncThunk<IUser, any>(
+  'user/uploadAvatarAPI',
+  async (body, thunkAPI) => {
+    try {
+      const response = await instance.put<IUser>('/v1/users/avatar', body)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
+export const deleteAvatarAPI = createAsyncThunk<IUser, void, any>(
+  'user/deleteAvatarAPI',
+  async (_, thunkAPI) => {
+    try {
+      const response = await instance.delete<IUser>('/v1/users/avatar')
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
+export const updatedUserAPI: AsyncThunk<any, any, any> = createAsyncThunk<IUser, any>(
+  'user/updatedUserAPI',
+  async (body, thunkAPI) => {
+    try {
+      const response = await instance.put<IUser>('/v1/users/current', body)
+      return response.data
+    } catch (error: any) {
+      return thunkAPI.rejectWithValue(error.response.data)
+    }
+  }
+)
+export const changePasswordAPI: AsyncThunk<any, { password: string; newPassword: string }, any> =
+  createAsyncThunk('user/changePasswordAPI', async (body, thunkAPI) => {
+    try {
+      const response = await instance.put<any>('/v1/users/checkPassword', body)
+      return response.data
+    } catch (error: any) {
+      // Sử dụng rejectWithValue để trả về lỗi
+      return thunkAPI.rejectWithValue(error.response?.data || 'Đã xảy ra lỗi')
+    }
+  })
 
 const userSlice = createSlice({
   name: 'user',
@@ -144,6 +192,59 @@ const userSlice = createSlice({
         state.status = null
       })
       .addCase(getCurrent.rejected, (state, action) => {
+        state.user = undefined
+        state.loading = null
+        state.error = action.payload as IError
+      })
+      .addCase(uploadAvatarAPI.pending, (state) => {
+        state.user = undefined
+        state.error = undefined
+        state.loading = null
+        state.status = null
+      })
+      .addCase(uploadAvatarAPI.fulfilled, (state, action) => {
+        state.user = action.payload
+        state.loading = null
+        state.status = null
+      })
+      .addCase(uploadAvatarAPI.rejected, (state, action) => {
+        state.user = undefined
+        state.loading = null
+        state.error = action.payload as IError
+      })
+      .addCase(deleteAvatarAPI.pending, (state) => {
+        state.user = undefined
+        state.error = undefined
+        state.loading = null
+        state.status = null
+      })
+      .addCase(deleteAvatarAPI.fulfilled, (state, _action) => {
+        if (state.user?.avatar) {
+          state.user.avatar.contentType = ''
+          state.user.avatar.url = ''
+        }
+        state.loading = null
+        state.status = null
+      })
+      .addCase(deleteAvatarAPI.rejected, (state, action) => {
+        state.user = undefined
+        state.loading = null
+        state.error = action.payload as IError
+      })
+      .addCase(updatedUserAPI.pending, (state) => {
+        state.error = undefined
+        state.loading = null
+        state.status = null
+      })
+      .addCase(updatedUserAPI.fulfilled, (state, action) => {
+        if (state.user) {
+          if (action.meta.arg.firstname) state.user.firstname = action.meta.arg.firstname
+          if (action.meta.arg.lastname) state.user.lastname = action.meta.arg.lastname
+        }
+        state.loading = null
+        state.status = null
+      })
+      .addCase(updatedUserAPI.rejected, (state, action) => {
         state.user = undefined
         state.loading = null
         state.error = action.payload as IError

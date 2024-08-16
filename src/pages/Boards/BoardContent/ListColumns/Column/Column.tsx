@@ -170,7 +170,7 @@ function Column({ column, ...props }: ColumProps) {
               data-no-dnd="true"
               sx={{
                 p: 0,
-                '& .MuiOutlinedInput-input': {
+                '&.MuiOutlinedInput-input': {
                   padding: '6px 8px',
                   fontSize: '1.25rem',
                   fontWeight: 'bold'

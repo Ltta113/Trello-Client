@@ -7,6 +7,7 @@ import SignUpForm from './pages/Users/SignUpForm/SignUpForm'
 import FinalRegister from './pages/Users/SignUpForm/FinalRegister/FinalRegister'
 import ForgotPassword from './pages/Users/ForgotPassword/ForgotPassword'
 import ResetPassword from './pages/Users/ResetPassword/ResetPassword'
+import UpdateForm from './pages/Users/UpdateForm/UpdateForm'
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
   {
     path: '/b/:boardId/:slug',
     element: <Board />
+  },
+  {
+    path: '/profile/:userId',
+    element: <UpdateForm />
   },
   {
     path: '/finalRegister/:status',
