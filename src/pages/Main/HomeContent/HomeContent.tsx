@@ -1,7 +1,8 @@
+import HomeBar from './HomeBar/HomeBar'
 
 function HomeContent() {
   return (
-    <div>HomeContent</div>
+    <HomeBar />
   )
 }
 

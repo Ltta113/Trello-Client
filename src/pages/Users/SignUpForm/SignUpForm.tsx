@@ -68,7 +68,7 @@ const SignUpForm = () => {
     if (status !== null) {
       toast.success(status)
       navigate('/login')
-    } else if (error) {
+    } else if (error?.statusCode !== undefined) {
       toast.error(`Error: ${error.statusCode} - ${error.message}`)
     }
   }, [error, navigate, status])

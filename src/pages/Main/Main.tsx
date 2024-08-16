@@ -6,7 +6,7 @@ import { RootState, useAppDispatch } from '~/redux/store'
 import { useEffect } from 'react'
 import { getCurrent } from '~/redux/userSlice'
 import AppBar from '~/components/AppBar/AppBar'
-import LoginForm from '../Users/LoginForm/LoginForm'
+import HomeContent from './HomeContent/HomeContent'
 
 function Main() {
   const user = useSelector((state: RootState) => state.user.user)
@@ -23,7 +23,7 @@ function Main() {
         height: '100vh'
       }}
     >
-      {!user && <LoginForm />}
+      {!user && <HomeContent />}
       {user && <AppBar />}
     </Container>
   )
